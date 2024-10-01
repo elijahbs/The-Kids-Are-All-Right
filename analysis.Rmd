@@ -1,0 +1,654 @@
+---
+title: "YouTube Video Scam Project Data Analysis"
+author: "Elijah Bouma-Sims"
+date: "2024-07-04"
+output: html_document
+---
+
+# Introduction
+
+This R Markdown file contains the analysis code for the paper "The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams" by Elijah Bouma-Sims, Lily Klucinec, Mandy Lanyon, Lorrie Faith Cranor, Julie Downs. paper. Please see README.md for a  descirption of all the files in this artifact.
+
+## Requirements
+Running this notebook requires the packages "dplyr", "RVAideMemoire", "rstatix", "readxl", "rcompanion", "DescTools", and "stringr".
+
+## Code overview
+In this section, we describe the structure of the code in "chronological" order. 
+
+The code begins with a setup section that loads packages/data, creates factors, etc. Data is pulled from the ```data\df_analysis.xlsx``` In the setup code, we also create a function called ```stat_test```. This function will be used repeatedly throughout the code, so it's worth reviewing in detail. It is called to run statistical tests to check whether an outcome variable (specified by the label in ```dep_var```) varies with respect to any of our potential explanatory variables (described in Table 1 of the paper). It runs the appropriate test and computes the appropriate effect size measure based on the type of the variables. Please see the function specification for a full ist of parameters.
+
+After the setup code, we proceed to generate tables of describe statistics for demographic variables for both adult and teen participants. The output from these code blocks was used to generate table 2 from the paper.
+
+The next section of the document contains all of the statistical testing code. Sub-sections are named based on the dependent variable being analyzed in a particular code block, with further subdivisions as appropriate. For example, the "Legit actions" subsection contains statistical testing results for users recommended actions in response to legit stimuli. The analysis for users reactions to the YouTube video and web video are under the subheadings "Legit video" and "Legit web" respectively. 
+
+In each statistical testing subsection, we run the ```stat_test``` function or the ```cochran.qtest``` function (for search result seleciton) to perform the statistical testing between the independent variables and the relevant dependent variable(s). If any results are significant, we use the "table" function to view how the dependent variable varies with the independent variable. Post-hoc tests run on a particular variable are listed under the appropriate heading for their dependent variable, and explicitly labeled as post-hoc results.
+
+## Finding key statistical testing results
+
+The length of this file is necessary to document all of the statistical tests we performed, but it can make it difficult to find particular results. To ease navigation, statistical testing results that are highlighted in the paper will begin with the text **Paper Result**. This should allow you to search the document for everywhere the term "Paper Result" appears in order to jump to those sections explicitly discussed in the paper.
+
+# Aanlysis code
+## Setup
+The following code imprts packages and loads the survey data (```df_merged```). 
+```{r}
+library("dplyr")
+library("RVAideMemoire") # for cocran q
+library("rstatix") # for cramer's v
+library("readxl") # to load data
+library("rcompanion") # for freeman theta
+library("DescTools") # for CochranArmitageTest 
+library("stringr") # for str_split
+data_path <- "data\\df_analysis.xlsx" # windows path
+# load analysis data.
+df_merged <- read_xlsx(data_path)
+```
+
+The following code creates new columns which are based upon the same question asked for Spotify and Roblox participants. For example, ```risk_usedSpotify``` and ```risk_playedRoblox```, which are the results of a question asking how frequently the participant uses spotify/plays Roblox, are merged into a new column ``risk_usedService```` 
+```{r}
+# usedSpotify and playedRoblox
+df_merged <- df_merged %>% mutate(risk_usedService = ifelse(is.na(risk_usedSpotify), ifelse(is.na(risk_playedRoblox),NA,risk_playedRoblox), risk_usedSpotify))
+
+# freeSpotify and freeRobux
+df_merged <- df_merged %>% mutate(risk_freePremium = ifelse(is.na(risk_freeSpotify), ifelse(is.na(risk_freeRobux),NA,risk_freeRobux), risk_freeSpotify))
+
+# spotifyPremium and purchasedRobux
+df_merged <- df_merged %>% mutate(risk_purchased = ifelse(is.na(risk_spotifyPremium), ifelse(is.na(risk_puchasedRobux),NA,risk_puchasedRobux), risk_spotifyPremium))
+
+# spotify_s and roblox_s
+df_merged <- df_merged %>% mutate(risk_searchedBefore = ifelse(is.na(spotify_s), ifelse(is.na(roblox_s),NA,roblox_s), spotify_s))
+```
+
+The following code turns the columns of categorical variables into factors for proper statistical analysis.
+```{r}
+weekly_time_levels = c("None",  "Less than an hour", "1 to 5 hours", "5 to 10 hours", "10 to 15 hours", "15 to 20 hours", "More than 20 hours")
+usage_levels = c("Never", "Once or twice", "Three to five times", "More than five times")
+income_levels = c("Less than $20,000", "$20,000 to $39,999", "$40,000 to $59,999", "$60,000 to $79,999", "$80,000 to $99,999", "$100,000 to $149,999", "Over $150,000")
+rank_scam_levels = c("Definitely legitimate", "Probably legitimate", "I'm not sure", "Probably a scam", "Definitely a scam")
+
+# time factors
+df_merged$time_overall <- factor(df_merged$time_overall, ordered = TRUE,levels=c("Less than 2 hours", "2 to 4 hours", "4 to 8 hours", "More than 8 hours"))
+df_merged$time_computer <- factor(df_merged$time_computer, ordered = TRUE,levels=weekly_time_levels)
+df_merged$time_videos <- factor(df_merged$time_videos, ordered = TRUE,levels=weekly_time_levels)
+df_merged$time_mobile <- factor(df_merged$time_mobile, ordered = TRUE,levels=weekly_time_levels)
+df_merged$time_nonsocial <- factor(df_merged$time_nonsocial, ordered = TRUE,levels=weekly_time_levels)
+df_merged$time_social <- factor(df_merged$time_social, ordered = TRUE,levels=weekly_time_levels)
+
+# Potential experential risk factors
+df_merged$risk_coupons <- factor(df_merged$risk_coupons, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_crypto <- factor(df_merged$risk_crypto, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_investments <- factor(df_merged$risk_investments, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_noRefund <- factor(df_merged$risk_noRefund, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_onlineTasks <- factor(df_merged$risk_onlineTasks, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_rebate <- factor(df_merged$risk_rebate, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_usedSpotify <- factor(df_merged$risk_usedSpotify, ordered = TRUE,levels=usage_levels)
+
+df_merged$risk_playedRoblox <- factor(df_merged$risk_playedRoblox, ordered = TRUE,levels=usage_levels)
+
+df_merged$often_onlinetask <- factor(df_merged$often_onlinetask, ordered = TRUE, levels=usage_levels)
+
+df_merged$risk_usedService <- factor(df_merged$risk_usedService, ordered = TRUE,levels=usage_levels)
+
+# Ranking
+df_merged$rank_legit <- factor(df_merged$rank_legit, levels=rank_scam_levels, ordered=TRUE)
+df_merged$rank_scam <- factor(df_merged$rank_scam, levels=rank_scam_levels, ordered=TRUE)
+
+# income
+df_merged$income <- factor(df_merged$income, ordered = TRUE, levels = income_levels)
+
+# Binary binary_gender
+df_merged$binary_gender <- factor(df_merged$gender, levels = c("Male", "Female"))
+```
+
+The following code creates data frames for adult and teen data separately (``df_merged_adult``` and ```df_merged_teen```).
+```{r}
+df_merged_adult <- df_merged %>% filter(adult == TRUE)
+df_merged_teen <- df_merged %>% filter(adult == FALSE)
+```
+
+The following code defines the ```stat_test``` function. This function performs statistical testing between the variables listed in table 1 of the paper and the variable specified by the label in ```dep_var```. The function returns the results in the form of a data frame containing the name of the independent variable, the name of the dependent variable, the name of the test which was run, and the appropriate effect size measure. 
+
+The parameters for the function are as follows: 
+
+1. The parameter ```dep_var``` specifies the dependent variable which we want to test. If the column specified by ```dep_var``` is one of the possible independent variables, the test for that indepndent variable is skipped.
+
+2. The variable ```condition_type``` specifies if the dependent variable should be tested based on which ```"legit"``` stimuli the participant saw or which ```"scam"``` stimuli the participant saw. For example, when testing for differences in participants' actions with respect to scam websites, it only makes sense to test for significant differences between the different scam stimuli shown. If no comparison based on condition is necessary, the ```test_condition``` variable can be set to FALSE. The default value for ```condition_type``` is ```"scam"``` and the default value for ```test_condition``` is ```TRUE```.
+
+3. The parameter ```df``` specifies which dataframe should be used to perform the statistical test. The default value is ```df_merged```.
+
+4. The variable ```stimuli_type``` specifies whether or not comparisons should be restricted to only participants who saw particular type of stimuli (i.e., Roblox or Spotify related). Setting the value to ```"roblox"``` will only perform statistical tests with participants who saw Roblox stimuli. Setting the value to ```"spotify"``` wil only perform statistical tests with participants who saw Spotify stimuli. The default value, ```"both"```, performs testing with the entire sample.
+
+5. The variables ```fisher_B``` and ```fisher_simulate_p``` are passed through to the ```fisher.test``` parameters ```B``` and ```simulate.p.value```. These variables are used to enable simulating Fisher's test using a Monte Carlo simulation with 10,000 replications. This is necessary due to the computational in feasibility of running Fisher's test on some larger contingency tables. See the documentation of "fisher.test" for more details.
+
+```{r}
+stat_test <- function(dep_var, condition_type = "scam", df=df_merged, test_condition = TRUE, stimuli_tyoe = "both", fisher_B = 10000, fisher_simulate_p = TRUE, p.adjust.method = "BH") {
+  raw_p = c()
+  adjusted_p = c()
+  indep_var_list = c()
+  dep_var_list = c()
+  test_list = c()
+  effect_list = c()
+  
+  # Run fisher test dep_var v adult
+  if(dep_var != "adult"){
+    vs_adult <- fisher.test(table(df[[dep_var]], df$adult), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_adult$p.value)
+    indep_var_list = c(indep_var_list, "adult")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$adult)))
+  }
+  # Run fisher test dep_var v  condition
+  if(dep_var != "scam_condition" && dep_var != "legit_condition" && test_condition){
+    if (condition_type == "scam"){
+      vs_condition <- fisher.test(table(df[[dep_var]], df$scam_condition), B=fisher_B, simulate.p.value = fisher_simulate_p)
+      indep_var_list = c(indep_var_list, "scam_condition")
+      effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$scam_condition)))
+    }else if (condition_type == "legit"){
+      vs_condition <- fisher.test(table(df[[dep_var]], df$legit_condition), B=fisher_B, simulate.p.value = fisher_simulate_p)
+      indep_var_list = c(indep_var_list, "legit_condition")
+      effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$legit_condition)))
+    }
+    if (condition_type == "scam" || condition_type == "legit"){
+      raw_p = c(raw_p, vs_condition$p.value)
+      dep_var_list = c(dep_var_list, dep_var)
+      test_list = c(test_list, "fisher")
+    }
+  }
+  if (dep_var != "time_overall"){
+    # Run fisher test dep_var v time_overall
+    vs_time_overall <- CochranArmitageTest(table(df[[dep_var]], df$time_overall))
+    raw_p = c(raw_p, vs_time_overall$p.value)
+    indep_var_list = c(indep_var_list, "time_overall")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$time_overall)))
+  }
+  
+  # Run fisher test dep_var v time_computer
+  if(dep_var != "time_videos"){
+    vs_time_videos <- CochranArmitageTest(table(df[[dep_var]], df$time_videos))
+    raw_p = c(raw_p, vs_time_videos$p.value)
+    indep_var_list = c(indep_var_list, "time_videos")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$time_videos)))
+  }
+  # Run fisher test dep_var v time_mobile
+  if(dep_var != "time_mobile"){
+    vs_time_mobile <- CochranArmitageTest(table(df[[dep_var]], df$time_mobile))
+    raw_p = c(raw_p, vs_time_mobile$p.value)
+    indep_var_list = c(indep_var_list, "time_mobile")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$time_mobile)))
+  }
+  
+  # Run fisher test dep_var v time_computer
+  if(dep_var != "time_computer"){
+    vs_time_computer <- CochranArmitageTest(table(df[[dep_var]], df$time_computer))
+    raw_p = c(raw_p, vs_time_computer$p.value)
+    indep_var_list = c(indep_var_list, "time_computer")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$time_computer)))
+  }
+  # Run fisher test dep_var v time_social
+  if(dep_var != "time_social"){
+    vs_time_social <- CochranArmitageTest(table(df[[dep_var]], df$time_social))
+    raw_p = c(raw_p, vs_time_social$p.value)
+    indep_var_list = c(indep_var_list, "time_social")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$time_social)))
+  }
+  # Run fisher test dep_var v time_nonsocial
+  if(dep_var != "time_nonsocial"){
+    vs_time_nonsocial <- CochranArmitageTest(table(df[[dep_var]], df$time_nonsocial))
+    raw_p = c(raw_p, vs_time_nonsocial$p.value)
+    indep_var_list = c(indep_var_list, "time_nonsocial")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$time_nonsocial)))
+  }
+  # Run fisher test dep_var v risk_playedRoblox
+  if(dep_var != "risk_playedRoblox" && (stimuli_tyoe == "both" || stimuli_tyoe == "roblox")){
+    vs_risk_playedRoblox <- fisher.test(table(df[[dep_var]], df$risk_playedRoblox))
+    raw_p = c(raw_p, vs_risk_playedRoblox$p.value)
+    indep_var_list = c(indep_var_list, "risk_playedRoblox")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list,"CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$risk_playedRoblox)))
+  }
+  # Run fisher test dep_var v risk_usedSpotify
+  if(dep_var != "risk_usedSpotify" && (stimuli_tyoe == "both" || stimuli_tyoe == "spotify")){
+    vs_risk_usedSpotify <- fisher.test(table(df[[dep_var]], df$risk_usedSpotify))
+    raw_p = c(raw_p, vs_risk_usedSpotify$p.value)
+    indep_var_list = c(indep_var_list, "risk_usedSpotify")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list,"CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$risk_usedSpotify)))
+  }
+  # Run fisher test dep_var v risk_SpotifyPremium
+  if(dep_var != "risk_spotifyPremium" && (stimuli_tyoe == "both" || stimuli_tyoe == "spotify")){
+    vs_risk_purchased <- fisher.test(table(df[[dep_var]], df$risk_spotifyPremium), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_risk_purchased$p.value)
+    indep_var_list = c(indep_var_list, "risk_spotifyPremium")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$risk_spotifyPremium)))
+  }
+  if(dep_var != "risk_puchasedRobux" && (stimuli_tyoe == "both" || stimuli_tyoe == "roblox")){
+    vs_risk_purchased <- fisher.test(table(df[[dep_var]], df$risk_puchasedRobux), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_risk_purchased$p.value)
+    indep_var_list = c(indep_var_list, "risk_puchasedRobux")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$risk_puchasedRobux)))
+  }
+
+  if(dep_var != "risk_freeSpotify" && (stimuli_tyoe == "both" || stimuli_tyoe == "spotify")){
+    vs_risk_freePremium <- fisher.test(table(df[[dep_var]], df$risk_freeSpotify), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_risk_freePremium$p.value)
+    indep_var_list = c(indep_var_list, "risk_freeSpotify")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$risk_freeSpotify)))
+  }
+  if(dep_var != "risk_freeRobux" && (stimuli_tyoe == "both" || stimuli_tyoe == "roblox")){
+    vs_risk_freePremium <- fisher.test(table(df[[dep_var]], df$risk_freeRobux), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_risk_freePremium$p.value)
+    indep_var_list = c(indep_var_list, "risk_freeRobux")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$risk_freeRobux)))
+  }
+  # Run fisher test dep_var v risk_noRefund
+  if(dep_var != "risk_noRefund"){
+    vs_risk_noRefund <- CochranArmitageTest(table(df[[dep_var]], df$risk_noRefund))
+    raw_p = c(raw_p, vs_risk_noRefund$p.value)
+    indep_var_list = c(indep_var_list, "risk_noRefund")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$risk_noRefund)))
+  }
+  # Run fisher test dep_var v risk_onlineTasks
+  if(dep_var != "risk_onlineTasks"){
+    vs_risk_onlineTasks <- CochranArmitageTest(table(df[[dep_var]], df$risk_onlineTasks))
+    raw_p = c(raw_p, vs_risk_onlineTasks$p.value)
+    indep_var_list = c(indep_var_list, "risk_onlineTasks")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$risk_onlineTasks)))
+  }
+  # Run fisher test dep_var v risk_crypto
+  if(dep_var != "risk_crypto"){
+    vs_risk_crypto <- CochranArmitageTest(table(df[[dep_var]], df$risk_crypto))
+    raw_p = c(raw_p, vs_risk_crypto$p.value)
+    indep_var_list = c(indep_var_list, "risk_crypto")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$risk_crypto)))
+  }
+  # Run fisher test dep_var v often_onlinetask
+  if(dep_var != "often_onlinetask"){
+    vs_often_onlinetask <- CochranArmitageTest(table(df[[dep_var]], df$often_onlinetask))
+    raw_p = c(raw_p, vs_often_onlinetask$p.value)
+    indep_var_list = c(indep_var_list, "often_onlinetask")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$often_onlinetask)))
+  }
+  # Run fisher test dep_var v income
+  if(dep_var != "income"){
+    vs_income <- CochranArmitageTest(table(df[[dep_var]], df$income))
+    raw_p = c(raw_p, vs_income$p.value)
+    indep_var_list = c(indep_var_list, "income")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "CochranArmitageTest")
+    effect_list = c(effect_list,freemanTheta(table(df[[dep_var]], df$income)))
+  }
+  # Run fisher test dep_var v binary_gender
+  if(dep_var != "binary_gender"){
+    vs_binary_gender <- fisher.test(table(df[[dep_var]], df$binary_gender), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_binary_gender$p.value)
+    indep_var_list = c(indep_var_list, "binary_gender")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$binary_gender)))
+  }
+  # Run fisher test dep_var v community_type
+  if(dep_var != "community_type"){
+    vs_community_type <- fisher.test(table(df[[dep_var]], df$community_type), B=fisher_B, simulate.p.value = fisher_simulate_p)
+    raw_p = c(raw_p, vs_community_type$p.value)
+    indep_var_list = c(indep_var_list, "community_type")
+    dep_var_list = c(dep_var_list, dep_var)
+    test_list = c(test_list, "fisher")
+    effect_list = c(effect_list,cramer_v(table(df[[dep_var]], df$community_type)))
+  }
+  # adjust p values
+  adjusted_p = p.adjust(raw_p, method = p.adjust.method)
+  
+  # compute significant results
+  significant_list = c()
+  for(i in adjusted_p){
+    if (i < 0.05){
+      significant_list = c(significant_list, TRUE)
+    }else{
+      significant_list = c(significant_list, FALSE)
+    }
+  }
+  # return
+  output_df = data.frame(independent=indep_var_list, dependent=dep_var_list, test=test_list, p.adjusted=adjusted_p, p.raw = raw_p, effect_size = effect_list, significant = significant_list)
+  return(output_df)
+}
+```
+
+
+## Descriptive statistics
+
+The following code blocks produce tables describing the gender, community type, state, household income, and age for the entire sample and the teen/adult samples independently. 
+
+```{r}
+print("Overall gender distribution")
+prop.table(table(df_merged$gender, useNA = "always"))
+print("Adult gender distribution")
+prop.table(table(df_merged_adult$gender, useNA = "always"))
+print("Teen gender distribution")
+prop.table(table(df_merged_teen$gender, useNA = "always"))
+```
+
+```{r}
+print("Overall community type distribution")
+prop.table(table(df_merged$community_type, useNA = "always"))
+print("Adult community type distribution")
+prop.table(table(df_merged_adult$community_type, useNA = "always"))
+print("Teen community type distribution")
+prop.table(table(df_merged_teen$community_type, useNA = "always"))
+```
+
+```{r}
+print("Overall state distribution")
+sort(prop.table(table(df_merged$state, useNA = "always")))
+print("Adult state distribution")
+sort(prop.table(table(df_merged_adult$state, useNA = "always")))
+print("Teen state distribution")
+sort(prop.table(table(df_merged_teen$state, useNA = "always")))
+```
+
+```{r}
+print("Overall income distribution")
+prop.table(table(df_merged$income, useNA = "always"))
+print("Adult income distribution")
+prop.table(table(df_merged_adult$income, useNA = "always"))
+print("Teen income distribution")
+prop.table(table(df_merged_teen$income, useNA = "always"))
+```
+
+```{r}
+df_merged_adult <- df_merged_adult %>% mutate(age_cat = case_when(
+                         age >= 18 & age <= 24 ~ "18 to 24",
+                         age >= 25 & age <= 34 ~ "25 to 34", 
+                         age >= 35 & age <= 44 ~ "35 to 44",
+                         age >= 45 & age <= 54 ~ "45 to 54",
+                         age >= 55 ~ "55+",
+                         TRUE ~ NA_character_))
+print("Adult age distribution")
+prop.table(table(df_merged_adult$age_cat))
+
+print("Teen age distribution")
+prop.table(table(df_merged_teen$age))
+
+```
+
+The following code blocks produce tables describing the various aspects of behavior asked about at the beginning of the survey for the entire sample and the teen/adult samples independently.  This includes devices used in the last week, social media services used in the last week, hours per day spent on digital entertainment, etc.
+
+```{r}
+# unlist(str_split(*)) splits comma separated values
+print("Overall social media services used in the last week distribution")
+table(unlist(str_split(df_merged$social_media, ",")))/nrow(df_merged)
+print("Teens social media services used in the last week distribution")
+table(unlist(str_split(df_merged_teen$social_media, ",")))/nrow(df_merged_teen)
+print("Adults social media services used in the last week distribution ")
+table(unlist(str_split(df_merged_adult$social_media, ",")))/nrow(df_merged_adult)
+```
+```{r}
+print("Overall devices used in the last week distribution")
+table(trimws(unlist(str_split(df_merged$devices, ","))))/nrow(df_merged)
+print("Teens devices used in the last week distribution")
+table(trimws(unlist(str_split(df_merged_teen$devices, ","))))/nrow(df_merged_teen)
+print("Adults devices used in the last week distribution")
+table(trimws(unlist(str_split(df_merged_adult$devices, ","))))/nrow(df_merged_adult)
+
+```
+
+```{r}
+print("Overall distribution of hours per day on digital entertainment")
+prop.table(table(df_merged$time_overall, useNA = "always"))
+print("Adult distribution of hours per day on digital entertainment")
+prop.table(table(df_merged_adult$time_overall, useNA = "always"))
+print("Teen distribution of hours per day on digital entertainment")
+prop.table(table(df_merged_teen$time_overall, useNA = "always"))
+```
+```{r}
+print("Overall distribution of time on watching online videos per week")
+prop.table(table(df_merged$time_videos, useNA = "always"))
+print("Adult distribution of time on watching online videos per week")
+prop.table(table(df_merged_adult$time_videos, useNA = "always"))
+print("Teen distribution of time on watching online videos per week")
+prop.table(table(df_merged_teen$time_videos, useNA = "always"))
+
+```
+
+```{r}
+print("Overall distribution of frequency of playing robux")
+prop.table(table(df_merged$risk_playedRoblox))
+print("Adult distribution of frequency of playing robux")
+prop.table(table(df_merged_adult$risk_playedRoblox))
+print("Teen distribution of frequency of playing robux")
+prop.table(table(df_merged_teen$risk_playedRoblox))
+```
+```{r}
+print("Overall distribution of frequency of using Spotify")
+prop.table(table(df_merged$risk_usedSpotify))
+print("Adult distribution of frequency of using Spotify")
+prop.table(table(df_merged_adult$risk_usedSpotify))
+print("Teen distribution of frequency of using Spotify")
+prop.table(table(df_merged_teen$risk_usedSpotify))
+
+```
+
+
+## Statistical testing
+### Adult vs Teen comparisons
+The following code tests which potential independent variables are associated with whether a participant is a teen or an adult
+```{r}
+adult_results <- stat_test(dep_var ="adult", condition_type = "scam")
+```
+
+**Paper Result**: The following code prints results that are significantly associated with being an adult/teen. These results are discussed in section 5A of the paper
+```{r}
+adult_results %>% filter(significant == TRUE)
+```
+The following code prints cross tabs for significant variables. Each row represents either Teens or Adults.  Each column represents a value of the tested variable. For the rows: 0 = teens, 1 = adults.
+```{r}
+print("Age vs.  Frequency of use of Roblox")
+print(prop.table(table(df_merged$adult, df_merged$risk_playedRoblox),1))
+```
+
+```{r}
+print("Age vs. Freuqnecy of use of Spotify")
+print(prop.table(table(df_merged$adult, df_merged$risk_usedSpotify),1))
+```
+```{r}
+print("Age vs. Purchased Roblox")
+print(prop.table(table(df_merged$adult, df_merged$risk_puchasedRobux),1))
+```
+```{r}
+print("Age vs. Frequency of playing mobile phone games")
+prop.table(table(df_merged$adult, df_merged$time_mobile),1) 
+```
+
+```{r}
+print("Age vs. Frequency of shopping with no refund")
+prop.table(table(df_merged$adult, df_merged$risk_noRefund),1) 
+```
+```{r}
+print("Age vs. Frequency of doing online tasks for money")
+prop.table(table(df_merged$adult, df_merged$risk_onlineTasks),1)
+```
+
+```{r}
+print("Age vs. Frequency of online tasks for money without being paid")
+prop.table(table(df_merged$adult, df_merged$often_onlinetask),1)
+```
+```{r}
+print("Age vs. Frequency of purchasing crypto assets")
+prop.table(table(df_merged$adult, df_merged$risk_crypto),1) 
+```
+
+```{r}
+# income
+print("Age vs. Household Income")
+prop.table(table(df_merged$adult, df_merged$income, useNA = "always"),1) 
+```
+### Gender comparisons
+
+The following code tests which potential independent variables are associated with binary gender. Sample size was insufficient to include non-binary individuals in this analysis. These comparisons are post-hoc.
+```{r}
+binary_gender_results <- stat_test(dep_var ="binary_gender", condition_type = "scam")
+```
+
+**Paper Result**: The following code prints results that are significantly associated with binary gender These results are discussed in section 5D of the paper
+```{r}
+binary_gender_results %>% filter(significant == TRUE)
+```
+The following code prints cross tabs for significant variables. Each row represents either men or women.  Each column represents a value of the tested variable. 
+```{r}
+print("Gender vs.Time spent on digital entertainment")
+prop.table(table(df_merged$binary_gender, df_merged$time_overall))
+```
+```{r}
+print("Gender vs.Time spent watching online videos per week")
+prop.table(table(df_merged$binary_gender, df_merged$time_videos), 1)
+```
+
+
+```{r}
+print("Gender vs.Time spent on computer/console games")
+prop.table(table(df_merged$binary_gender, df_merged$time_computer),1)
+```
+
+```{r}
+print("Gender vs.time spent on non-social media websites per week")
+prop.table(table(df_merged$binary_gender, df_merged$time_nonsocial), 1)
+```
+
+```{r}
+print("Gender vs.Frequency of purchasing crypto assets")
+prop.table(table(df_merged$binary_gender, df_merged$risk_crypto), 1)
+```
+### Experience searching for Free Robux comparisons
+The following code tests which potential independent variables are significantly associated with experience searching for "Free Roblox robux" or something similar
+
+```{r}
+roblox_s_results <- stat_test("roblox_s", stimuli_tyoe = "roblox",condition_type = "neither")
+```
+**Paper Result**: The following code prints results for variables that are significantly associated with experience previously searching for "Free Roblox robux" or something similar. These results are discussed in section 5C and 5D of the paper.
+```{r}
+roblox_s_results %>% filter(significant == TRUE,)
+```
+The following code prints cross tabs for significant variables. Each row represents people reported previously searching for "Free Roblox robux" or something similar vs. those who had not searched. 0 = those who had not searched, 1 = those who had searched. 
+
+```{r}
+print("Searching for Free Robux vs. Age")
+prop.table(table(df_merged$adult, df_merged$roblox_s),1)
+```
+```{r}
+print("Searching for Free Robux vs.Frequency of playing Roblox")
+table(df_merged$roblox_s, df_merged$risk_playedRoblox)
+# two times or fewer: 108 total, 9 say they searched = 9/108 = 8.3%
+# Three times or more: 32 total, 14 say they searched 14/32 = 0.4375 
+```
+
+```{r}
+print("Searching for Free Robux vs.Purchasing Robux")
+prop.table(table(df_merged$roblox_s, df_merged$risk_puchasedRobux),2)
+```
+
+```{r}
+print("Searching for Free Robux vs.Receiving Free Robux ")
+prop.table(table(df_merged$roblox_s, df_merged$risk_freeRobux ),2)
+```
+```{r}
+print("Searching for Free Robux vs.Frequency of doing online tasks")
+prop.table(table(df_merged$roblox_s, df_merged$risk_onlineTasks ),2)
+```
+
+### Experience searching for Free Spotify comparisons
+The following code tests which potential independent variables are significantly associated with previously searching for "Free Spotify Premium" or something similar.
+```{r}
+spotify_s_results <- stat_test("spotify_s", stimuli_tyoe = "spotify", condition_type = "neither")
+```
+**Paper Result**: The following code shows that none of the tested variables varied significantly 
+```{r}
+spotify_s_results %>% filter(significant == TRUE)
+```
+
+### Free Robux search liklihood comparisons
+The following code tests which potential independent variables are significantly associated with a liklihood of  searching for "Free Roblox Robux" or something similar
+
+```{r}
+# Bin to likely vs unlikely
+df_merged <- df_merged %>% mutate(rbolox_s_likleihood_bool = ifelse(roblox_s_likliehood == "Somewhat likely", TRUE,ifelse(roblox_s_likliehood == "Extremely likely", TRUE, ifelse(is.na(roblox_s_likliehood), NA, FALSE))))
+roblox_s_likliehood_results <- stat_test("rbolox_s_likleihood_bool", stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested variables varied significantly 
+```{r}
+roblox_s_likliehood_results %>% filter(significant == TRUE)
+```
+
+### Free Spotify search liklihood comparisons
+The following code tests which potential independent variables are significantly associated with a liklihood of  searching for "Free Spotify Premium" or something similar
+```{r}
+# Bin to likely vs unlikely
+df_merged <- df_merged %>% mutate(spotify_s_liklihood_bool = ifelse(spotify_s_liklihood == "Somewhat likely", TRUE,ifelse(spotify_s_liklihood == "Extremely likely", TRUE, ifelse(is.na(spotify_s_liklihood), NA, FALSE))))
+spotify_s_liklihood_results <- stat_test("spotify_s_liklihood_bool", stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested variables varied significantly 
+```{r}
+spotify_s_liklihood_results %>% filter(significant == TRUE)
+```
+
+
+
+### Scam Ranking comparions
+The following code tests which potential independent variables  are significantly associated with the liklihood of correctly idnetifyin the scam stimuli
+```{r}
+rank_scam_results <- stat_test(dep_var ="rank_scam_bool", condition_type = "scam")
+```
+**Paper Result**: The following code prints results for variables that are significantly associated with correctly identifying scam stimuli. These results are discussed in section 5D 
+```{r}
+rank_scam_results %>% filter(significant == TRUE)
+```
+
+The following code prints cross tables for significant results. The rows represent whether or not scam video was correctly identified. 0 = participant identified the video as legit or selected I don't know, 1 = participant identified the video as a scam.
+```{r}
+print("Searching for Free Robu vs.Frequency of doing online tasks")
+prop.table(table(df_merged$scam_condition, df_merged$rank_scam_bool), 1)
+prop.table(table(df_merged$scam_condition, df_merged$rank_scam),1)
+```
+
+#### Post-hoc comparisons
+**Paper Result** Gender is associated with amount of time spent daily on digital entertainment activites. The following code tests whether time spent on digital entertainment activites is a significant predictor of ranking success when controlling for gender
+
+
+### Legit actions
+#### Legit videos
+#### Legit web
+### Scam actions
