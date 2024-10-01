@@ -2,7 +2,9 @@
 title: "YouTube Video Scam Project Data Analysis"
 author: "Elijah Bouma-Sims"
 date: "2024-07-04"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 # Introduction
@@ -614,7 +616,7 @@ roblox_s_likliehood_results %>% filter(significant == TRUE)
 ```
 
 ### Free Spotify search liklihood comparisons
-The following code tests which potential independent variables are significantly associated with a liklihood of  searching for "Free Spotify Premium" or something similar
+The following code tests which potential independent variables are significantly associated with a likelihood of  searching for "Free Spotify Premium" or something similar
 ```{r}
 # Bin to likely vs unlikely
 df_merged <- df_merged %>% mutate(spotify_s_liklihood_bool = ifelse(spotify_s_liklihood == "Somewhat likely", TRUE,ifelse(spotify_s_liklihood == "Extremely likely", TRUE, ifelse(is.na(spotify_s_liklihood), NA, FALSE))))
@@ -628,7 +630,7 @@ spotify_s_liklihood_results %>% filter(significant == TRUE)
 
 
 ### Scam Ranking comparions
-The following code tests which potential independent variables  are significantly associated with the liklihood of correctly idnetifyin the scam stimuli
+The following code tests which potential independent variables  are significantly associated with correctly identifying the scam stimuli
 ```{r}
 rank_scam_results <- stat_test(dep_var ="rank_scam_bool", condition_type = "scam")
 ```
@@ -637,18 +639,808 @@ rank_scam_results <- stat_test(dep_var ="rank_scam_bool", condition_type = "scam
 rank_scam_results %>% filter(significant == TRUE)
 ```
 
-The following code prints cross tables for significant results. The rows represent whether or not scam video was correctly identified. 0 = participant identified the video as legit or selected I don't know, 1 = participant identified the video as a scam.
+The following code prints cross tables for significant results. The rows represent whether or not scam video was correctly identified. 0 = participant identified the video as legit or selected I don't know, 1 = participant identified the video as a scam. 
+
 ```{r}
-print("Searching for Free Robu vs.Frequency of doing online tasks")
-prop.table(table(df_merged$scam_condition, df_merged$rank_scam_bool), 1)
-prop.table(table(df_merged$scam_condition, df_merged$rank_scam),1)
+print("Correct scam identification vs. stimuli shown")
+prop.table(table(df_merged$rank_scam_bool, df_merged$scam_condition), 2)
+print("Scam ranking vs. stimuli shown")
+prop.table(table(df_merged$rank_scam, df_merged$scam_condition ),2)
+```
+```{r}
+print("Correct scam identification vs. gender")
+prop.table(table(df_merged$rank_scam_bool, df_merged$binary_gender), 2)
+print("Scam ranking vs. gender")
+table(df_merged$rank_scam, df_merged$binary_gender)
+# 29 women did not identify scam. 13 of these selected I'm not sure. 13/29 = 0.4482759
+# 9 men did not identify scam. 3 of these selected I'm not sure. 3/9 = 0.333333
 ```
 
+```{r}
+print("Correct scam identification vs. time on computer/console games")
+prop.table(table(df_merged$time_computer, df_merged$rank_scam_bool),1)
+```
+
+
 #### Post-hoc comparisons
-**Paper Result** Gender is associated with amount of time spent daily on digital entertainment activites. The following code tests whether time spent on digital entertainment activites is a significant predictor of ranking success when controlling for gender
+**Paper Result** Gender is associated with amount of time spent daily on digital entertainment activities. The following code tests whether time spent on digital entertainment activities is a significant predictor of ranking success when controlling for gender. From this, we see that time remains a weakly significant predictor for women ($p_{uncorrected} < 0.006$, $\theta = 0.181$) but not men ($p_{uncorrected} = 0.156$)
+```{r}
+# bin to men and women separately
+df_merged_men <- df_merged %>% filter(binary_gender == "Male")
+df_merged_women <- df_merged %>% filter(binary_gender == "Female")
+print("Test scam ranking vs. time overall with just men")
+CochranArmitageTest(table(df_merged_men$time_overall, df_merged_men$rank_scam_bool))
+print("Test scam ranking vs. time overall with just women")
+CochranArmitageTest(table(df_merged_women$time_overall, df_merged_women$rank_scam_bool))
+freemanTheta(table(df_merged_women$time_overall, df_merged_women$rank_scam_bool))
+```
+
+**Paper Result** Gender is associated with amount of time spent weekly on console/computer games. The following code tests whether time spent on console/comptuer games is a significant predictor of ranking success when controlling for gender. From this, we see that time remains a not a significant predictor for just women ($p_{uncorrected} = 0.159$) or just men($p_{uncorrected} = 0.275$)
+```{r}
+# Check if difference exists with just men
+print("Test scam ranking vs. time on console/computer games with just men")
+CochranArmitageTest(table(df_merged_men$time_computer, df_merged_men$rank_scam_bool))
+print("Test scam ranking vs. time on console/computer games with just women")
+CochranArmitageTest(table(df_merged_women$time_computer, df_merged_women$rank_scam_bool))
+```
 
 
-### Legit actions
-#### Legit videos
-#### Legit web
-### Scam actions
+### Legit Ranking comparions
+The following code tests which potential independent variables are significantly associated with correctly identifying the legit stimuli
+```{r}
+rank_legit_results <- stat_test(dep_var ="rank_legit_bool", condition_type = "legit")
+```
+
+The following code prints results for variables that are significantly associated with correctly identifying legit stimuli
+```{r}
+rank_legit_results %>% filter(significant == TRUE)
+```
+The following code prints cross tables for significant results. The rows represent whether or not legit video was correctly identified. 0 = participant identified the video as a scam or selected I don't know, 1 = participant identified the video as legit. 
+```{r}
+print("Correct legit identification vs. legit stimuli shown")
+prop.table(table(df_merged$rank_legit_bool,df_merged$legit_condition),2)
+print("Legit ranking vs. legit stimuli shown")
+prop.table(table(df_merged$rank_legit,df_merged$legit_condition),2)
+```
+
+```{r}
+print("Correct legit identification vs. frequency of doing online tasks")
+prop.table(table(df_merged$rank_legit_bool, df_merged$risk_onlineTasks), 2)
+print("Legit ranking vs. frequency of doing online tasks")
+prop.table(table(df_merged$rank_legit, df_merged$risk_onlineTasks), 2)
+```
+
+### Legit action comparisons
+#### Legit Youtube video comparisons
+The following code splits the list of actions that the user recommended in response to the legit youtube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.the.video.without.doing.anything``` is ```TRUE``` if the partiicpant recommended that their friend exit the video. 
+```{r}
+splitup <- sapply(unlist(df_merged$legit), strsplit, ',')
+headnames <- unique(unlist(splitup))
+mat <- t(unname(sapply(splitup, function(x) headnames %in% x)))
+colnames(mat) <- headnames
+df_legit_actions <- data.frame(df_merged, mat)
+```
+
+Each of the following subsections runs the statistical testing for a particular action.
+
+##### Exit 
+The following code tests which potential independent variables are significantly associated with recommending exiting the legit YouTube video.
+```{r}
+legit_exit_results <- stat_test(dep_var = "Exit.the.video.without.doing.anything", df=df_legit_actions, condition_type = "legit")
+```
+**Paper Result**: The following code prints results for variables that are significantly associated with recommending to Exit the legit YouTube video. The fact that legit stimuli shown is significantly associated with the rate of exiting the legit YouTube video is presented in Figure 3a of the paper. 
+```{r}
+legit_exit_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of recommending to exit the legit YouTube video by legit stimuli shown 
+```{r}
+prop.table(table(df_legit_actions$Exit.the.video.without.doing.anything, df_legit_actions$legit_condition),2)
+```
+##### Search to learn more
+The following code tests which potential independent variables are significantly associated with recommending searching to learn more about the legit YouTube video.
+```{r}
+legit_search_results <- stat_test(dep_var = "Search.online.to.learn.more.about.what.the.video.describes", df=df_legit_actions, condition_type = "legit")
+```
+**Paper Result**: The following code prints results for variables that are significantly associated with recommending to search for more information about the legit YouTube video. The fact that legit stimuli shown is significantly associated the rate of searching for more information about the legit YouTube video is presented in Figure 3a of the paper. 
+```{r}
+legit_search_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of recommending to search to learn more about the legit YouTube video by legit stimuli shown. 
+```{r}
+prop.table(table(df_legit_actions$Search.online.to.learn.more.about.what.the.video.describes, df_legit_actions$legit_condition),2)
+```
+##### Report the video
+The following code tests which potential independent variables are significantly associated with recommending to report the legit YouTube video.
+```{r}
+legit_report_results <- stat_test(dep_var = "Report.the.video.to.YouTube", df=df_legit_actions, condition_type = "legit")
+```
+**Paper Result**: The following code prints results for variables that are significantly associated with recommending to report the legit YouTube video. This result is discussed in section 5D of the paper. 
+```{r}
+legit_report_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of recommending to report the legit YouTube video by frequency of doing online tasks. 
+```{r}
+prop.table(table(df_legit_actions$Report.the.video.to.YouTube, df_legit_actions$risk_onlineTasks),2)
+```
+###### Post-hoc result
+**Paper Result** Being an adult/teen is associated with frequency of doing online tasks. While being an adult/teen was not found to be a significant predictor of reporting legit YouTube videos, it was a significant predictor for reporting scam YouTube videos. For this reason, the following code tests whether frequency of doing online tasks  is a significant predictor of ranking success when controlling for age. From this, we see that frequency of online tasks is not a significant predictor when looking at adults ($p_{uncorrected} = 0.1049$) or teens alone ($p_{uncorrected} = 0.4185$) This result is discussed in section 5D of the paper. 
+```{r}
+df_legit_actions_adult<-df_legit_actions %>% filter(adult == TRUE)
+df_legit_actions_teen<-df_legit_actions %>% filter(adult == FALSE)
+print("Test reporting legit YouTube videos vs. frequency of doing online tasks with just adults")
+CochranArmitageTest(table(df_legit_actions_adult$risk_onlineTasks, df_legit_actions_adult$Report.the.video.to.YouTube))
+print("Test reporting legit YouTube videos vs. frequency of doing online tasks with just teens")
+CochranArmitageTest(table(df_legit_actions_teen$risk_onlineTasks, df_legit_actions_teen$Report.the.video.to.YouTube))
+```
+
+##### Visit the website
+The following code tests which potential independent variables are significantly associated with recommending to visit the website from the legit YouTube video.
+```{r}
+legit_visit_results <- stat_test(dep_var = "Visit.the.website.s..shown.in.the.video", df=df_legit_actions, condition_type = "legit")
+```
+**Paper Result**: The following code prints results for variables that are significantly associated with recommending to visit the website shown in legit YouTube video. 
+The fact that legit stimuli shown is significantly associated the rate of vising the website shown in the legit YouTube video is presented in Figure 3a of the paper. The other results are not discussed due to a lack of space. 
+```{r}
+legit_visit_results %>% filter(significant == TRUE)
+```
+The following code prints cross tables for significant results. The rows represent whether or not the user recommended visiting the website shown in the legit YouTube video. 
+```{r}
+print("Visit legit website vs. teen (0)/adult(1)")
+prop.table(table(df_legit_actions$Visit.the.website.s..shown.in.the.video, df_legit_actions$adult),2)
+
+```
+```{r}
+print("Visit legit website vs. legit stimuli shown")
+prop.table(table(df_legit_actions$Visit.the.website.s..shown.in.the.video, df_legit_actions$legit_condition),2)
+```
+
+```{r}
+print("Visit legit website vs. time spent playing mobile games")
+prop.table(table(df_legit_actions$time_mobile, df_legit_actions$Visit.the.website.s..shown.in.the.video),1)
+```
+
+```{r}
+print("online tasks vs visit website")
+prop.table(table(df_legit_actions$risk_onlineTasks, df_legit_actions$Visit.the.website.s..shown.in.the.video),1)
+```
+
+###### Post-hoc tests
+Being an adult/teen is associated with time spent playing mobile games per week. The following code determines whether time spent playing mobile games remains a significant predictor when controlling for age. From this, we see that time spent on mobile games remains a significant predictor of visiting the website shown in the legit YouTube video, even when looking at just adults ($p_{uncorrected} = 0.014$) or teens ($p_{uncorrected} < 0.001$).
+```{r}
+df_legit_actions_adult<-df_legit_actions %>% filter(adult == TRUE)
+df_legit_actions_teen<-df_legit_actions %>% filter(adult == FALSE)
+print("Test visit website vs. time on mobile games with just adults")
+CochranArmitageTest(table(df_legit_actions_adult$time_mobile, df_legit_actions_adult$Visit.the.website.s..shown.in.the.video))
+print("Test visit website vs. time on mobile games with just teens")
+CochranArmitageTest(table(df_legit_actions_teen$time_mobile, df_legit_actions_teen$Visit.the.website.s..shown.in.the.video))
+```
+
+Being an adult/teen is associated with frequency of doing online tasks. The following code determines whether frequency of doing online tasks remains a significant predictor when controlling for age. From this, we see that frequency of doing online tasks remains weakly significant predictor of visiting the website shown in the legit YouTube video only for teens alone ($p_{uncorrected} = 0.012$), but not adults alone ($p_{uncorrected} = 0.4441$)
+```{r}
+print("online tasks vs visit website for adults")
+CochranArmitageTest(table(df_legit_actions_adult$risk_onlineTasks, df_legit_actions_adult$Visit.the.website.s..shown.in.the.video))
+print("online tasks vs visit website for teens")
+CochranArmitageTest(table(df_legit_actions_teen$risk_onlineTasks, df_legit_actions_teen$Visit.the.website.s..shown.in.the.video))
+```
+
+##### Look at the comments
+The following code tests which potential independent variables are significantly associated with recommending to look at the comments on the legit YouTube video.
+```{r}
+legit_lookatcomments_results <- stat_test(dep_var = "Look.at.the.comments.on.the.video", df=df_legit_actions, condition_type = "legit")
+```
+The following code shows that none of the tested variables were significantly associated with looking at the comments on the legit YouTube video
+```{r}
+legit_lookatcomments_results %>% filter(significant == TRUE)
+```
+##### Leave a comment
+The following code tests which potential independent variables are significantly associated with recommending to leave a comment on the legit YouTube video
+```{r}
+legit_leaveacomment_results <- stat_test(dep_var = "Leave.a.comment.on.the.video..please.specify.", df=df_legit_actions, condition_type = "legit")
+```
+The following code shows that none of the tested variables were significantly associated with recommending to leave a comment on the legit YouTube video
+```{r}
+legit_leaveacomment_results %>% filter(significant == TRUE)
+```
+##### other
+The following code tests which potential independent variables are significantly associated with recommending a different action in response to the legit YouTube video
+```{r}
+legit_other_results <- stat_test(dep_var = "Other..please.specify.", df=df_legit_actions, condition_type = "legit")
+```
+The following code shows that none of the tested variables were significantly associated with recommending a different action in response to the legit YouTube video
+```{r}
+legit_other_results %>% filter(significant == TRUE)
+```
+
+#### Legit Web video cmpariosons
+The following code splits the list of actions that the user recommended in response to the legit website videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.from.the.website.without.doing.anything``` is ```TRUE``` if the partiicpant recommended that their friend exit the website. 
+```{r}
+splitup <- sapply(unlist(df_merged$lgt_web), strsplit, ',')
+headnames <- unique(unlist(splitup))
+mat <- t(unname(sapply(splitup, function(x) headnames %in% x)))
+colnames(mat) <- headnames
+df_lgt_web_actions <- data.frame(df_merged, mat)
+```
+
+##### Exit
+The following code tests which potential independent variables are significantly associated with recommending to exit the legit website
+```{r}
+lgt_web_exit_results <- stat_test(dep_var = "Exit.from.the.website.without.doing.anything", df=df_lgt_web_actions, condition_type = "legit")
+```
+The following code shows that none of the tested variables were significantly associated with exiting the legit website.
+```{r}
+lgt_web_exit_results %>% filter(significant == TRUE)
+```
+
+
+##### Search online
+The following code tests which potential independent variables are significantly associated with recommending to search to learn more about the legit website
+```{r}
+lgt_web_search_results <- stat_test(dep_var = "Search.online.to.learn.more.about.the.website", df=df_lgt_web_actions, condition_type = "legit")
+```
+The following code prints results for variables that are significantly associated with recommending to search to learn more about the legit website.
+```{r}
+lgt_web_search_results %>% filter(significant == TRUE)
+```
+The following code prints the table comparing the rate of recommending to search to learn more about the legit website based on level of usage of Spotify
+```{r}
+prop.table(table(df_lgt_web_actions$Search.online.to.learn.more.about.the.website, df_lgt_web_actions$risk_usedSpotify),2)
+```
+
+##### Follow all instructions
+The following code tests which potential independent variables are significantly associated with recommending to follow the instructions from the legit video.
+```{r}
+lgt_web_follow_results <- stat_test(dep_var = "Follow.all.of.the.instructions.in.the.video.to.complete.the.offer", df=df_lgt_web_actions, condition_type = "legit")
+```
+The following code shows that none of the tested variables were significantly associated with following the instrucitons on the legit website.
+```{r}
+lgt_web_follow_results %>% filter(significant == TRUE)
+```
+
+
+##### Register for website
+The following code tests which potential independent variables are significantly associated with recommending to register for the legit video.
+```{r}
+lgt_web_register_results <- stat_test(dep_var = "Register.for.the.website", df=df_lgt_web_actions, condition_type = "legit")
+```
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to register for the legit website. The fact that legit stimuli is significantly associated with recommending to register for the website is shown in figure 3b. 
+```{r}
+lgt_web_register_results %>% filter(significant == TRUE)
+```
+The following code prints cross tables for significant results. The rows represent whether or not the user recommended visiting the website shown in the legit YouTube video. 
+```{r}
+print("Register for the legit website vs legit stimuli shown ")
+prop.table(table(df_lgt_web_actions$Register.for.the.website, df_lgt_web_actions$legit_condition),2)
+```
+```{r}
+print("Rgister for legit website vs. rate of doing online tasks")
+prop.table(table(df_lgt_web_actions$Register.for.the.website, df_lgt_web_actions$risk_onlineTasks),2)
+```
+
+##### Ask for help
+The following code combines the option presented to adults ("Ask a knowledgeable friend for help") with the option presented ot teens ("Ask a parent for help")
+```{r}
+df_lgt_web_actions$Ask.for.help <- df_lgt_web_actions$Ask.a.knowledgeable.friend.for.help | df_lgt_web_actions$Ask.a.parent.for.help
+```
+The following code tests which potential independent variables are significantly associated with recommending to ask for help when viewing the legit website
+```{r}
+lgt_web_ask_for_help_results <- stat_test(dep_var = "Ask.for.help", df=df_lgt_web_actions, condition_type = "legit")
+```
+**Paper result**: The following code prints results for variables that are significantly associated with asking for help when viewing the legit website. The fact that teens were more likely to recommend asking for hlep is discussed in seciton 5C
+```{r}
+lgt_web_ask_for_help_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of recommending asking for help between teens (0) and adults (1). The rows represent recommending asking for help or not. 
+```{r}
+prop.table(table(df_lgt_web_actions$Ask.for.help, df_lgt_web_actions$adult),2)
+```
+
+##### Other
+The following code tests which potential independent variables are significantly associated with recommending another action when viewing the legit website
+```{r}
+lgt_other_results <- stat_test(dep_var = "Other..please.specify.", df=df_lgt_web_actions)
+```
+The following code shows that none of the tested variables were significantly associated with recommending another action when viewing the legit website.
+```{r}
+lgt_other_results %>% filter(significant == TRUE)
+```
+
+### Scam action comparsons
+#### Scam YouTube video comparisons
+The following code splits the list of actions that the user recommended in response to the legit YouTube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.the.video.without.doing.anything``` is ```TRUE``` if the participant recommended that their friend exit the video. 
+```{r}
+splitup <- sapply(unlist(df_merged$scam), strsplit, ',')
+headnames <- unique(unlist(splitup))
+mat <- t(unname(sapply(splitup, function(x) headnames %in% x)))
+colnames(mat) <- headnames
+df_scam_actions <- data.frame(df_merged, mat)
+```
+
+
+**Paper result**: The following code calculates the proportion of participants who both recommended visiting the scam website alongside another information gathering action. These proportions are discussed in section 5B of the paper. 
+```{r}
+print("Proportion of participants who recommended to visit the website AND look at the comments")
+nrow(filter(df_scam_actions, Visit.the.website.s..shown.in.the.video &  (Look.at.the.comments.on.the.video)))/nrow(filter(df_scam_actions, Visit.the.website.s..shown.in.the.video))
+print("Proportion of participants who recommended to visit the website AND search online to learn more")
+nrow(filter(df_scam_actions, Visit.the.website.s..shown.in.the.video &  (Search.online.to.learn.more.about.what.the.video.describes)))/nrow(filter(df_scam_actions, Visit.the.website.s..shown.in.the.video))
+```
+
+##### Exit 
+The following code tests which potential independent variables are significantly associated with recommending exiting the scam YouTube video.
+```{r}
+scam_exit_results <- stat_test(dep_var = "Exit.the.video.without.doing.anything", df=df_scam_actions)
+```
+The following code shows that none of the tested independent variables are significantly associated with recommending to exit the scam YouTube video. 
+```{r}
+scam_exit_results %>% filter(significant == TRUE)
+```
+
+##### Search to learn more
+The following code tests which potential independent variables are significantly associated with recommending searching to learn more about the scam YouTube video.
+```{r}
+scam_search_results <- stat_test(dep_var = "Search.online.to.learn.more.about.what.the.video.describes", df=df_scam_actions)
+```
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to search to learn more about the scam YouTube video. The fact that searching to learn more about the scam YouTube is significantly associated with scam stimuli is shown in figure 2a
+```{r}
+scam_search_results %>% filter(significant == TRUE)
+```   
+The following code prints the rate of recommending to search to learn more about the scam YouTube video by stimuli shown. The rows represent whether the partiicpant recommended to search to learn more or not.
+```{r}
+prop.table(table(df_scam_actions$Search.online.to.learn.more.about.what.the.video.describes, df_scam_actions$scam_condition ),2)
+```
+
+##### Report the video
+The following code tests which potential independent variables are significantly associated with recommending to report the scam YouTube video.
+```{r}
+scam_report_results <- stat_test(dep_var = "Report.the.video.to.YouTube", df=df_scam_actions)
+```
+
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to report the scam YouTube video. The fact that the rate of recommending to report the scam YouTube video significantly associated with being a teen/adult is discussed in section 5C. The fact that the frequency of doing online tasks was (probably spuriously) associated with the rate of reporting videos is discussed in section 5D.
+```{r}
+scam_report_results %>% filter(significant == TRUE)
+```  
+The following code prints cross tables for significant results. The rows represent whether or not the user recommended reporting the scam YouTube video.
+
+```{r}
+print("Report scam video vs. teen (0)/adult(1) ")
+prop.table(table(df_scam_actions$Report.the.video.to.YouTube, df_scam_actions$adult),2)
+```
+```{r}
+print("Report scam video vs. frequency of doing online tasks")
+prop.table(table(df_scam_actions$Report.the.video.to.YouTube, df_scam_actions$risk_onlineTasks),2)
+```
+
+###### Post-hoc test
+
+**Paper result**: The frequency of doing online tasks for money varies significantly between adults and teens. The following code tests whether the frequency of online tasks is still significantly associated with reporting the scam YouTube video when controlling for whether the participant is a teen or adult. From this, we see that frequency of online tasks is not a significant predictor when looking at adults  ($p_{uncorrected} = 0.876$) or teens alone ($p_{uncorrected} = 0.726$) This result is discussed in section 5D of the paper. 
+
+```{r}
+df_scam_actions_adult <- df_scam_actions %>% filter(adult == TRUE)
+df_scam_actions_teen <- df_scam_actions %>% filter(adult == FALSE)
+print("Comparison of reporting scam YouTube video vs frequency of doing online tasks for adults only")
+CochranArmitageTest(table(df_scam_actions_adult$Report.the.video.to.YouTube, df_scam_actions_adult$risk_onlineTasks))
+print("Comparison of reporting scam YouTube video vs frequency of doing online tasks for teens only")
+CochranArmitageTest(table(df_scam_actions_teen$Report.the.video.to.YouTube, df_scam_actions_teen$risk_onlineTasks))
+```
+
+##### Visit the website
+The following code tests which potential independent variables are significantly associated with recommending to visit the website shown in the scam YouTube video.
+```{r}
+scam_visit_results <- stat_test(dep_var = "Visit.the.website.s..shown.in.the.video", df=df_scam_actions)
+```
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to visit the website shown in the scam YouTube video. The fact that visiting the website shown in scam YouTube video is significantly associated with stimuli shown is shown in figure 2a
+```{r}
+scam_visit_results %>% filter(significant == TRUE)
+```  
+The following code shows the rate of recommending to visit the website shown in the scam YouTube video by scam stimuli shown The rows represent whether the participant recommended visitng the scam website or not.   
+```{r}
+prop.table(table(df_scam_actions$Visit.the.website.s..shown.in.the.video, df_scam_actions$scam_condition), 2)
+```
+
+##### Leave a comments
+The following code tests which potential independent variables are significantly associated with recommending to leave a comment on the scam YouTube video.
+```{r}
+scam_leavecomments_results <- stat_test(dep_var = "Leave.a.comment.on.the.video..please.specify.", df=df_scam_actions)
+```
+The following code shows that none of the potential explanatory variables are significantly associated with recommending to leave a commnet on the scam YouTube video. 
+```{r}
+scam_leavecomments_results %>% filter(significant == TRUE)
+``` 
+##### Look at comments
+The following code tests which potential independent variables are significantly associated with recommending to look at the comments on the scam YouTube video.
+```{r}
+scam_lookcomments_results <- stat_test(dep_var = "Look.at.the.comments.on.the.video", df=df_scam_actions)
+```
+The following code shows that none of the potential explanatory variables are significantly associated with recommending to look at the commnets on the scam YouTube video. 
+```{r}
+scam_lookcomments_results %>% filter(significant == TRUE)
+``` 
+
+##### other
+The following code tests which potential independent variables are significantly associated with recommending another action in response to the scam YouTube video.
+```{r}
+scam_other_results <- stat_test(dep_var = "Other..please.specify.", df=df_scam_actions)
+```
+The following code shows that none of the potential explanatory variables are significantly associated with recommending another action in response to the scam YouTube video. 
+```{r}
+scam_other_results %>% filter(significant == TRUE)
+``` 
+
+#### Scam website video comparisons
+The following code splits the list of actions that the user recommended in response to the legit youtube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.from.the.website.without.doing.anything``` is ```TRUE``` if the participant recommended that their friend exit the website. 
+```{r}
+splitup <- sapply(unlist(df_merged$scm_web), strsplit, ',')
+headnames <- unique(unlist(splitup))
+mat <- t(unname(sapply(splitup, function(x) headnames %in% x)))
+colnames(mat) <- headnames
+df_scm_web_actions <- data.frame(df_merged, mat)
+```
+##### Exit
+The following code tests which potential independent variables are significantly associated with recommending exiting the scam website.
+```{r}
+scm_web_exit_results <- stat_test(dep_var = "Exit.from.the.website.without.doing.anything", df=df_scm_web_actions)
+```
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to exit the scam website. The fact that recommending to exit the website varied by stimuli shown is shown in figure 2b and discussed in section 5B of the paper.
+```{r}
+scm_web_exit_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of recommending to exit the scam website by scam stimuli shown. The rows represent whether or not the user recommended exiting from the scam website.
+```{r}
+prop.table(table(df_scm_web_actions$Exit.from.the.website.without.doing.anything, df_scm_web_actions$scam_condition),2)
+```
+
+##### Search online
+The following code tests which potential independent variables are significantly associated with recommending searching online to learn more about the scam website.
+```{r}
+scm_web_search_results <- stat_test(dep_var = "Search.online.to.learn.more.about.the.website", df=df_scm_web_actions)
+```
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to search online to learn more about the scam website. The fact that recommending to search online to learn more about the website varied by stimuli shown is shown in figure 2b and discussed in section 5B of the paper.
+```{r}
+scm_web_search_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of recommending to search online to learn more about the scam website by scam stimuli shown. The rows represent whether or not the user recommended searching to learn more about the scam website.
+```{r}
+prop.table(table(df_scm_web_actions$Search.online.to.learn.more.about.the.website, df_scm_web_actions$scam_condition),2)
+```
+
+##### Follow all instructions
+The following code tests which potential independent variables are significantly associated with recommending to follow the instructions from the scam video on the website.
+```{r}
+scm_follow_results <- stat_test(dep_var = "Follow.all.of.the.instructions.in.the.video.to.complete.the.offer", df=df_scm_web_actions)
+```
+The following code show that none of the tested independent variables are significantly associated with recommending to follow the instructions from the scam video on the website.
+```{r}
+scm_follow_results %>% filter(significant == TRUE)
+```
+
+##### Register for website
+The following code tests which potential independent variables are significantly associated with recommending to register for the scam website. 
+```{r}
+scm_register_results <- stat_test(dep_var = "Register.for.the.website", df=df_scm_web_actions)
+```
+The following code shows that none of the tested independent variables are significantly associated with recommending to register for the scam website.
+```{r}
+scm_register_results %>% filter(significant == TRUE)
+```
+
+##### Ask for help
+The following code combines the option presented to adults ("Ask a knowledgeable friend for help") with the option presented ot teens ("Ask a parent for help")
+```{r}
+df_scm_web_actions$Ask.for.help <- df_scm_web_actions$Ask.a.knowledgeable.friend.for.help | df_scm_web_actions$Ask.a.parent.for.help
+```
+
+The following code tests which potential independent variables are significantly associated with recommending to ask for help when viewing the scam website.
+```{r}
+scm_ask_for_help_results <- stat_test(dep_var = "Ask.for.help", df=df_scm_web_actions)
+```
+The following code shows that none of the tested independent variables are significantly associated with recommending to ask for help when viewing the scam website.
+```{r}
+scm_ask_for_help_results %>% filter(significant == TRUE)
+```
+
+##### Other
+The following code tests which potential independent variables are significantly associated with recommending another action in response to the scam website. 
+```{r}
+scm_other_results <- stat_test(dep_var = "Other..please.specify.", df=df_scm_web_actions)
+```
+The following code shows that none of the tested independent variables are significantly associated with recommending another action in response to the scam website. 
+```{r}
+scm_other_results %>% filter(significant == TRUE)
+```
+
+### Thumbnail comparisons
+The following code subsets the data to just the participants who saw Roblox stimuli and just participants who saw Spotify stimuli respectively.
+```{r}
+df_tn_roblox <- filter(df_merged, !is.na(roblox_tn_selection))
+df_tn_spotify <- filter(df_merged, !is.na(spotify_tn_selection))
+```
+
+The following code prints a table showing the proportion of participants who mentioned looking at each feature in the search results. 
+```{r}
+table(unlist(str_split(df_merged$tn_parts, ",")))/nrow(df_merged)
+```
+
+The next two subsections run statistical testing for the Spotify and Roblox search result selection task indepdently. 
+#### Spotify thumbnail comparisons
+The following code first creates ```df_tn_spotify_wide``` by spliting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result was selected. The numbering is described in the dictionary file. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_spotify_long```, This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
+```{r}
+splitup <- sapply(unlist(df_tn_spotify$spotify_tn_selection), strsplit, ',')
+headnames <- c("1","2","3","4","5","6","7","8","9","10")
+df_tn_spotify_wide <- data.frame(df_tn_spotify,(mat <- t(unname(sapply(splitup, function(x) headnames %in% x)))))
+df_tn_spotify_long <- gather(df_tn_spotify_wide, thumbnail, selected, X1:X9, factor_key=TRUE)
+```
+
+**Paper Result**: The following code performs Cochran's Q test to determine whether the search results were selected at significantly different rates. It then performs pairwise Wilcoxon sign tests to compare search results to one another. The fact that the Spotify search results were selected at significantly different rates are discussed in section 5B of the paper. The fact that the legitimate search results were more often selected than the scam search results is also discussed in section 5B.
+```{r}
+xtabs(~selected + thumbnail, df_tn_spotify_long)
+tn_spotify.qtest <- cochran.qtest(selected ~ thumbnail|pid, df_tn_spotify_long, p.method = "BH")
+print(tn_spotify.qtest)
+```
+
+The following code computes the effect size measure $\eta^2_Q$
+```{r}
+# formula Q/(number of participants * (number of conditions - 1))
+tn_spotify.qtest$statistic/(nrow(df_tn_spotify_wide)*(9-1))
+```
+The following subsections determine whether the rate of selecting particular search results are significantly associated with any of the tested independent variables.
+##### Clickbait Search Result 1
+The following code tests whether selecting the first clickbait search result is significantly associated with any of the tested independent variables.
+```{r}
+tn1_spotify_results <- stat_test("X1", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the first clickbait search result.
+```{r}
+tn1_roblox_results %>% filter(significant == TRUE)
+```
+
+##### Clickbait Search Result 2
+The following code tests whether selecting the second clickbait search result is significantly associated with any of the tested independent variables.
+```{r}
+tn2_spotify_results <- stat_test("X2", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code prints which independent variables are significantly associated with selecting the second clickbait search result.
+```{r}
+tn2_spotify_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of selecting the second clickbait search result by time spent watching online videos per week.  The rows represent whether or not the participant selected the second clickbait search result.
+```{r}
+prop.table(table(df_tn_spotify_wide$X2, df_tn_spotify_wide$time_videos),2)
+```
+
+##### Clickbait Search Result 3
+The following code tests whether selecting the third clickbait search result is significantly associated with any of the tested independent variables.
+```{r}
+tn3_spotify_results <- stat_test("X3", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the third clickbait search result.
+```{r}
+tn3_spotify_results %>% filter(significant == TRUE)
+```
+
+##### Legit Search Result 1
+The following code tests whether selecting the first legitimate search result is significantly associated with any of the tested independent variables.
+```{r}
+tn4_spotify_results <- stat_test("X4", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the first legit search result.
+```{r}
+tn4_spotify_results %>% filter(significant == TRUE)
+```
+##### Legit Search Result 2
+The following code tests whether selecting the second legitimate search result is significantly associated with any of the tested independent variables.
+```{r}
+tn5_spotify_results <- stat_test("X5", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the second legit search result.
+```{r}
+tn5_spotify_results %>% filter(significant == TRUE)
+```
+##### Legit Search Result 3
+The following code tests whether selecting the third legitimate search result is significantly associated with any of the tested independent variables.
+```{r}
+tn6_spotify_results <- stat_test("X6", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the third legit search result.
+```{r}
+tn6_spotify_results %>% filter(significant == TRUE)
+```
+##### Scam Search Result 1
+The following code tests whether selecting the first scam  search result is significantly associated with any of the tested independent variables.
+```{r}
+tn7_spotify_results <- stat_test("X7", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the first scam search result.
+```{r}
+tn7_spotify_results %>% filter(significant == TRUE)
+```
+##### Scam Search Result 2
+The following code tests whether selecting the second scam  search result is significantly associated with any of the tested independent variables.
+```{r}
+tn8_spotify_results <- stat_test("X8", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code prints which independent variables are significantly associated with selecting the second scam search result.
+```{r}
+tn8_spotify_results %>% filter(significant == TRUE)
+```
+The following code prints cross tables for significant results.  The rows represent whether or not the participant selected the second clickbait search result.
+```{r}
+print("Rate of selectin gthe second scam search result vs. frequency of using Spotify")
+prop.table(table(df_tn_spotify_wide$X8, df_tn_spotify_wide$risk_usedSpotify),2)
+```
+
+```{r}
+print("Rate of selecting the second scam search result vs. experience purchasing spotify premium")
+prop.table(table(df_tn_spotify_wide$X8, df_tn_spotify_wide$risk_spotifyPremium),2)
+```
+
+```{r}
+print("Rate of selecting the second scam search result vs. experience receiving free spotify premium")
+prop.table(table(df_tn_spotify_wide$X8, df_tn_spotify_wide$risk_freeSpotify),2)
+```
+
+##### Scam Search Result 3
+The following code tests whether selecting the third scam  search result is significantly associated with any of the tested independent variables.
+```{r}
+tn9_spotify_results <- stat_test("X9", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the third scam search result.
+```{r}
+tn9_spotify_results %>% filter(significant == TRUE)
+```
+##### No Search Results
+The following code tests whether selecting none of the search results is significantly associated with any of the tested independent variables.
+```{r}
+no_answer_spotify_Stats_Results <- stat_test("X10", df=df_tn_spotify_wide, test_condition = FALSE, stimuli_tyoe = "spotify")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting none of the search results.
+```{r}
+no_answer_spotify_Stats_Results %>% filter(significant == TRUE)
+```
+
+### Compare Rbolox thumbnail
+The following code first creates ```df_tn_roblox_wide``` by splitting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_roblox_long```, This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
+```{r}
+splitup <- sapply(unlist(df_tn_roblox$roblox_tn_selection), strsplit, ',')
+headnames <- c("1","2","3","4","5","6","7","8","9","10")
+df_tn_roblox_wide <- data.frame(df_tn_roblox,(mat <- t(unname(sapply(splitup, function(x) headnames %in% x)))))
+df_tn_roblox_long <- gather(df_tn_roblox_wide, thumbnail, selected, X1:X9, factor_key=TRUE)
+```
+
+**Paper Result**: The following code performs Cochran's Q test to determine whether the search results were selected at significantly different rates. It then performs pairwise Wilcoxon sign tests to compare search results to one another. The fact that the Roblox search results were selected at significantly different rates are discussed in section 5B of the paper. The fact that the legitimate search results were more often selected than the scam search results is also discussed in section 5B.
+```{r}
+xtabs(~selected + thumbnail, df_tn_roblox_long)
+tn_roblox.qtest <- cochran.qtest(selected ~ thumbnail|pid, df_tn_roblox_long, p.method = "BH")
+print(tn_roblox.qtest)
+```
+
+The following code computes the effect size measure $\eta^2_Q$
+```{r}
+# formula Q/(number of participants * (number of conditions - 1))
+tn_roblox.qtest$statistic/(nrow(df_tn_roblox_wide)*(9-1))
+```
+
+The following subsections determine whether the rate of selecting particular search results are significantly associated with any of the tested independent variables.
+
+#### CLickbait Search Result 1
+The following code tests whether selecting the first clickbait search result is significantly associated with any of the tested independent variables.
+```{r}
+tn1_roblox_results <- stat_test("X1", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the first clickbait search results.
+```{r}
+tn1_roblox_results %>% filter(significant == TRUE)
+```
+
+#### CLickbait Search Result 2
+The following code tests whether selecting the second clickbait search result is significantly associated with any of the tested independent variables.
+```{r}
+tn2_roblox_results <- stat_test("X2", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the second clickbait search results.
+```{r}
+tn2_roblox_results %>% filter(significant == TRUE)
+```
+
+
+#### CLickbait Search Result 3
+The following code tests whether selecting the third clickbait search result is significantly associated with any of the tested independent variables.
+```{r}
+tn3_roblox_results <- stat_test("X3", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the third clickbait search results.
+```{r}
+tn3_roblox_results %>% filter(significant == TRUE)
+```
+#### Legit Search Result 1
+The following code tests whether selecting the first legit search result is significantly associated with any of the tested independent variables.
+```{r}
+tn4_roblox_results <- stat_test("X4", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the first legit search results.
+```{r}
+tn4_roblox_results %>% filter(significant == TRUE)
+```
+#### Legit Search Result 2
+The following code tests whether selecting the second legit search result is significantly associated with any of the tested independent variables.
+```{r}
+tn5_roblox_results <- stat_test("X5", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code prints which independent variables are significantly associated with selecting the second legit search result.
+```{r}
+tn5_roblox_results %>% filter(significant == TRUE)
+```
+The following code prints cross tables for significant results.  The rows represent whether or not the participant selected the second legit search result.
+```{r}
+print("Rate of selecting the second legit search result vs. frequency of playing Roblox")
+prop.table(table(df_tn_roblox_wide$X5, df_tn_roblox_wide$risk_playedRoblox), 2)
+```
+
+```{r}
+print("Rate of selecting the second legit search result vs. frequency of doing online tasks")
+prop.table(table(df_tn_roblox_wide$X5, df_tn_roblox_wide$risk_onlineTasks), 2)
+```
+
+#### Legit Search Result 3
+The following code tests whether selecting the third legit search result is significantly associated with any of the tested independent variables.
+```{r}
+tn6_roblox_results <- stat_test("X6", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the third legit search results.
+```{r}
+tn6_roblox_results %>% filter(significant == TRUE)
+```
+
+#### Scam Search Result 1
+The following code tests whether selecting the first scam search result is significantly associated with any of the tested independent variables.
+```{r}
+tn7_roblox_results <- stat_test("X7", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+The following code shows that none of the tested independent variables are significantly associated with selecting the first scam search results.
+```{r}
+tn7_roblox_results %>% filter(significant == TRUE)
+```
+
+#### Scam Search Result 2
+The following code tests whether selecting the second scam search result is significantly associated with any of the tested independent variables.
+```{r}
+tn8_roblox_results <- stat_test("X8", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+
+The following code prints which independent variables are significantly associated with selecting the second scam search result.
+```{r}
+tn8_roblox_results %>% filter(significant == TRUE)
+```
+The following code prints the rate of selecting the second scam search result by the frequency of playing Roblox. The rows represent whether or not hte partiicpant selected the second scam search result. 
+```{r}
+prop.table(table(df_tn_roblox_wide$X8, df_tn_roblox_wide$risk_playedRoblox), 2)
+```
+#### Scam Search Result 3
+The following code tests whether selecting the third scam search result is significantly associated with any of the tested independent variables.
+```{r}
+tn9_roblox_results <- stat_test("X9", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+
+The following code shows that none of the tested independent variables are significantly associated with selecting the third scam search results.
+```{r}
+tn9_roblox_results %>% filter(significant == TRUE)
+```
+
+
+#### No Search Result selected
+The following code tests whether selecting the no search results is significantly associated with any of the tested independent variables.
+```{r}
+no_thumbnails_result <- stat_test("X10", df=df_tn_roblox_wide, test_condition = FALSE, stimuli_tyoe = "roblox")
+```
+
+The following code prints which independent variables are significantly associated with selecting no search results.
+```{r}
+no_thumbnails_result %>% filter(significant == TRUE)
+```
+
+The following code prints the rate of selecting no search results by the frequency of playing Roblox. The rows represent whether or not the participant selected no search results. 
+```{r}
+prop.table(table(df_tn_roblox_wide$X10, df_tn_roblox_wide$risk_playedRoblox),2)
+```
+
+
+
+
