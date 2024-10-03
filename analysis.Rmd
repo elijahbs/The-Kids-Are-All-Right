@@ -1,29 +1,27 @@
 ---
-title: "YouTube Video Scam Project Data Analysis"
+title: "Data Analysis Scripts for 'The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams'"
 author: "Elijah Bouma-Sims"
 date: "2024-07-04"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 # Introduction
 
-This R Markdown file contains the analysis code for the paper "The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams" by Elijah Bouma-Sims, Lily Klucinec, Mandy Lanyon, Lorrie Faith Cranor, Julie Downs. paper. Please see README.md for a  descirption of all the files in this artifact.
+This R Markdown file contains the analysis code for the paper "The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams" by Elijah Bouma-Sims, Lily Klucinec, Mandy Lanyon, Lorrie Faith Cranor, Julie Downs Please see README.md for a  description of all the files in this artifact.
 
 ## Requirements
 Running this notebook requires the packages "dplyr", "RVAideMemoire", "rstatix", "readxl", "rcompanion", "DescTools", and "stringr".
 
 ## Code overview
-In this section, we describe the structure of the code in "chronological" order. 
+The code begins with a setup section that loads packages/data, creates factors, etc. Data is pulled from ```data\df_analysis.xlsx```. In the setup code, we also create a function called ```stat_test```. This function will be used repeatedly throughout the code, so it's worth reviewing in detail. It runs statistical tests to check whether an outcome variable (specified by the label in ```dep_var```) varies with respect to any of our potential explanatory variables (described in Table 1 of the paper). It runs the appropriate test and computes the appropriate effect size measure based on the type of the variables. Please see the function specification for a full ist of parameters.
 
-The code begins with a setup section that loads packages/data, creates factors, etc. Data is pulled from the ```data\df_analysis.xlsx``` In the setup code, we also create a function called ```stat_test```. This function will be used repeatedly throughout the code, so it's worth reviewing in detail. It is called to run statistical tests to check whether an outcome variable (specified by the label in ```dep_var```) varies with respect to any of our potential explanatory variables (described in Table 1 of the paper). It runs the appropriate test and computes the appropriate effect size measure based on the type of the variables. Please see the function specification for a full ist of parameters.
+After the setup code, we generate tables of descriptive statistics for demographic variables for both adult and teen participants. The output from these code blocks was used to generate table 2 from the paper.
 
-After the setup code, we proceed to generate tables of describe statistics for demographic variables for both adult and teen participants. The output from these code blocks was used to generate table 2 from the paper.
+After the print the descriptive statistics, the following sections contain all of the code for statistical testing. The sub-sections are named based on the dependent variable being analyzed in a particular code block, with further subdivisions as appropriate. For example, the "Legit action comparisons" subsection contains statistical testing results for users recommended actions in response to legit stimuli. The analysis for users reactions to the YouTube video and web video are under the subheadings "Legit Youtube video comparisons" and "Legit Web video cmpariosons" respectively. 
 
-The next section of the document contains all of the statistical testing code. Sub-sections are named based on the dependent variable being analyzed in a particular code block, with further subdivisions as appropriate. For example, the "Legit actions" subsection contains statistical testing results for users recommended actions in response to legit stimuli. The analysis for users reactions to the YouTube video and web video are under the subheadings "Legit video" and "Legit web" respectively. 
-
-In each statistical testing subsection, we run the ```stat_test``` function or the ```cochran.qtest``` function (for search result seleciton) to perform the statistical testing between the independent variables and the relevant dependent variable(s). If any results are significant, we use the "table" function to view how the dependent variable varies with the independent variable. Post-hoc tests run on a particular variable are listed under the appropriate heading for their dependent variable, and explicitly labeled as post-hoc results.
+In each statistical testing subsection, we run the ```stat_test``` function or the ```cochran.qtest``` function (for search result selection) to perform the statistical testing between the independent variables and the relevant dependent variable(s). If any results are significant, we use the "table" function to view how the dependent variable varies with the independent variable. Post-hoc tests run on a particular variable are listed under the appropriate heading for their dependent variable, and explicitly labeled as post-hoc results.
 
 ## Finding key statistical testing results
 
@@ -117,7 +115,7 @@ The following code defines the ```stat_test``` function. This function performs 
 
 The parameters for the function are as follows: 
 
-1. The parameter ```dep_var``` specifies the dependent variable which we want to test. If the column specified by ```dep_var``` is one of the possible independent variables, the test for that indepndent variable is skipped.
+1. The parameter ```dep_var``` specifies the dependent variable which we want to test from the dataframe ```df```. If the column specified by ```dep_var``` is one of the possible independent variables, the test for that indepndent variable is skipped.
 
 2. The variable ```condition_type``` specifies if the dependent variable should be tested based on which ```"legit"``` stimuli the participant saw or which ```"scam"``` stimuli the participant saw. For example, when testing for differences in participants' actions with respect to scam websites, it only makes sense to test for significant differences between the different scam stimuli shown. If no comparison based on condition is necessary, the ```test_condition``` variable can be set to FALSE. The default value for ```condition_type``` is ```"scam"``` and the default value for ```test_condition``` is ```TRUE```.
 
@@ -125,7 +123,7 @@ The parameters for the function are as follows:
 
 4. The variable ```stimuli_type``` specifies whether or not comparisons should be restricted to only participants who saw particular type of stimuli (i.e., Roblox or Spotify related). Setting the value to ```"roblox"``` will only perform statistical tests with participants who saw Roblox stimuli. Setting the value to ```"spotify"``` wil only perform statistical tests with participants who saw Spotify stimuli. The default value, ```"both"```, performs testing with the entire sample.
 
-5. The variables ```fisher_B``` and ```fisher_simulate_p``` are passed through to the ```fisher.test``` parameters ```B``` and ```simulate.p.value```. These variables are used to enable simulating Fisher's test using a Monte Carlo simulation with 10,000 replications. This is necessary due to the computational in feasibility of running Fisher's test on some larger contingency tables. See the documentation of "fisher.test" for more details.
+5. The variables ```fisher_B``` and ```fisher_simulate_p``` are passed through to the ```fisher.test``` parameters ```B``` and ```simulate.p.value```. These variables are used to enable simulating Fisher's test using a Monte Carlo simulation with 10,000 replications. This is necessary due to the computational infeasibility of running Fisher's test on some larger contingency tables. See the documentation of "fisher.test" for more details.
 
 ```{r}
 stat_test <- function(dep_var, condition_type = "scam", df=df_merged, test_condition = TRUE, stimuli_tyoe = "both", fisher_B = 10000, fisher_simulate_p = TRUE, p.adjust.method = "BH") {
@@ -477,7 +475,7 @@ adult_results <- stat_test(dep_var ="adult", condition_type = "scam")
 ```{r}
 adult_results %>% filter(significant == TRUE)
 ```
-The following code prints cross tabs for significant variables. Each row represents either Teens or Adults.  Each column represents a value of the tested variable. For the rows: 0 = teens, 1 = adults.
+The following code prints cross tabs for significant variables. Each row represents either Teens or Adults. For the rows: 0 = teens, 1 = adults.
 ```{r}
 print("Age vs.  Frequency of use of Roblox")
 print(prop.table(table(df_merged$adult, df_merged$risk_playedRoblox),1))
@@ -521,7 +519,7 @@ prop.table(table(df_merged$adult, df_merged$income, useNA = "always"),1)
 ```
 ### Gender comparisons
 
-The following code tests which potential independent variables are associated with binary gender. Sample size was insufficient to include non-binary individuals in this analysis. These comparisons are post-hoc.
+The following code tests which potential independent variables are associated with binary gender. Sample size was insufficient to include non-binary individuals in this analysis. These comparisons were not preplanned, but run to contextualize differences in behavior.
 ```{r}
 binary_gender_results <- stat_test(dep_var ="binary_gender", condition_type = "scam")
 ```
@@ -530,7 +528,7 @@ binary_gender_results <- stat_test(dep_var ="binary_gender", condition_type = "s
 ```{r}
 binary_gender_results %>% filter(significant == TRUE)
 ```
-The following code prints cross tabs for significant variables. Each row represents either men or women.  Each column represents a value of the tested variable. 
+The following code prints cross tabs for significant variables. Each row represents either men or women.
 ```{r}
 print("Gender vs.Time spent on digital entertainment")
 prop.table(table(df_merged$binary_gender, df_merged$time_overall))
@@ -556,7 +554,7 @@ print("Gender vs.Frequency of purchasing crypto assets")
 prop.table(table(df_merged$binary_gender, df_merged$risk_crypto), 1)
 ```
 ### Experience searching for Free Robux comparisons
-The following code tests which potential independent variables are significantly associated with experience searching for "Free Roblox robux" or something similar
+The following code tests which potential independent variables are significantly associated with experience searching for "Free Roblox Robux" or something similar
 
 ```{r}
 roblox_s_results <- stat_test("roblox_s", stimuli_tyoe = "roblox",condition_type = "neither")
@@ -602,8 +600,8 @@ spotify_s_results <- stat_test("spotify_s", stimuli_tyoe = "spotify", condition_
 spotify_s_results %>% filter(significant == TRUE)
 ```
 
-### Free Robux search liklihood comparisons
-The following code tests which potential independent variables are significantly associated with a liklihood of  searching for "Free Roblox Robux" or something similar
+### Free Robux search likelihood comparisons
+The following code tests which potential independent variables are significantly associated with an expressed likelihood of  searching for "Free Roblox Robux" or something similar
 
 ```{r}
 # Bin to likely vs unlikely
@@ -712,7 +710,7 @@ prop.table(table(df_merged$rank_legit, df_merged$risk_onlineTasks), 2)
 
 ### Legit action comparisons
 #### Legit Youtube video comparisons
-The following code splits the list of actions that the user recommended in response to the legit youtube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.the.video.without.doing.anything``` is ```TRUE``` if the partiicpant recommended that their friend exit the video. 
+The following code splits the list of actions that the user recommended in response to the legit youtube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example,  ```Exit.the.video.without.doing.anything``` is ```TRUE``` if the partiicpant recommended that their friend exit the video. 
 ```{r}
 splitup <- sapply(unlist(df_merged$legit), strsplit, ',')
 headnames <- unique(unlist(splitup))
@@ -796,12 +794,12 @@ prop.table(table(df_legit_actions$Visit.the.website.s..shown.in.the.video, df_le
 
 ```{r}
 print("Visit legit website vs. time spent playing mobile games")
-prop.table(table(df_legit_actions$time_mobile, df_legit_actions$Visit.the.website.s..shown.in.the.video),1)
+prop.table(table(df_legit_actions$Visit.the.website.s..shown.in.the.video, df_legit_actions$time_mobile),2)
 ```
 
 ```{r}
-print("online tasks vs visit website")
-prop.table(table(df_legit_actions$risk_onlineTasks, df_legit_actions$Visit.the.website.s..shown.in.the.video),1)
+print("visit legit website vs. online tasks")
+prop.table(table(df_legit_actions$Visit.the.website.s..shown.in.the.video, df_legit_actions$risk_onlineTasks),2)
 ```
 
 ###### Post-hoc tests
@@ -852,7 +850,7 @@ legit_other_results %>% filter(significant == TRUE)
 ```
 
 #### Legit Web video cmpariosons
-The following code splits the list of actions that the user recommended in response to the legit website videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.from.the.website.without.doing.anything``` is ```TRUE``` if the partiicpant recommended that their friend exit the website. 
+The following code splits the list of actions that the user recommended in response to the legit website videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.from.the.website.without.doing.anything``` is ```TRUE``` if the participant recommended that their friend exit the website. 
 ```{r}
 splitup <- sapply(unlist(df_merged$lgt_web), strsplit, ',')
 headnames <- unique(unlist(splitup))
@@ -925,7 +923,7 @@ The following code tests which potential independent variables are significantly
 ```{r}
 lgt_web_ask_for_help_results <- stat_test(dep_var = "Ask.for.help", df=df_lgt_web_actions, condition_type = "legit")
 ```
-**Paper result**: The following code prints results for variables that are significantly associated with asking for help when viewing the legit website. The fact that teens were more likely to recommend asking for hlep is discussed in seciton 5C
+**Paper result**: The following code prints results for variables that are significantly associated with asking for help when viewing the legit website. The fact that teens were more likely to recommend asking for help is discussed in section 5C
 ```{r}
 lgt_web_ask_for_help_results %>% filter(significant == TRUE)
 ```
@@ -1066,7 +1064,7 @@ scam_other_results %>% filter(significant == TRUE)
 ``` 
 
 #### Scam website video comparisons
-The following code splits the list of actions that the user recommended in response to the legit youtube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.from.the.website.without.doing.anything``` is ```TRUE``` if the participant recommended that their friend exit the website. 
+The following code splits the list of actions that the user recommended in response to the legit YouTube videos into columns of booleans, with each boolean indicating whether or not an action was selected.For example, ```Exit.from.the.website.without.doing.anything``` is ```TRUE``` if the participant recommended that their friend exit the website. 
 ```{r}
 splitup <- sapply(unlist(df_merged$scm_web), strsplit, ',')
 headnames <- unique(unlist(splitup))
@@ -1159,9 +1157,8 @@ The following code prints a table showing the proportion of participants who men
 table(unlist(str_split(df_merged$tn_parts, ",")))/nrow(df_merged)
 ```
 
-The next two subsections run statistical testing for the Spotify and Roblox search result selection task indepdently. 
-#### Spotify thumbnail comparisons
-The following code first creates ```df_tn_spotify_wide``` by spliting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result was selected. The numbering is described in the dictionary file. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_spotify_long```, This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
+#### Spotify search result comparisons
+The following code first creates ```df_tn_spotify_wide``` by splitting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result was selected. The numbering is described in the dictionary file. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_spotify_long```, This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
 ```{r}
 splitup <- sapply(unlist(df_tn_spotify$spotify_tn_selection), strsplit, ',')
 headnames <- c("1","2","3","4","5","6","7","8","9","10")
@@ -1189,7 +1186,7 @@ tn1_spotify_results <- stat_test("X1", df=df_tn_spotify_wide, test_condition = F
 ```
 The following code shows that none of the tested independent variables are significantly associated with selecting the first clickbait search result.
 ```{r}
-tn1_roblox_results %>% filter(significant == TRUE)
+tn1_spotify_results %>% filter(significant == TRUE)
 ```
 
 ##### Clickbait Search Result 2
@@ -1263,7 +1260,7 @@ tn8_spotify_results %>% filter(significant == TRUE)
 ```
 The following code prints cross tables for significant results.  The rows represent whether or not the participant selected the second clickbait search result.
 ```{r}
-print("Rate of selectin gthe second scam search result vs. frequency of using Spotify")
+print("Rate of selecting the second scam search result vs. frequency of using Spotify")
 prop.table(table(df_tn_spotify_wide$X8, df_tn_spotify_wide$risk_usedSpotify),2)
 ```
 
@@ -1305,7 +1302,7 @@ df_tn_roblox_wide <- data.frame(df_tn_roblox,(mat <- t(unname(sapply(splitup, fu
 df_tn_roblox_long <- gather(df_tn_roblox_wide, thumbnail, selected, X1:X9, factor_key=TRUE)
 ```
 
-**Paper Result**: The following code performs Cochran's Q test to determine whether the search results were selected at significantly different rates. It then performs pairwise Wilcoxon sign tests to compare search results to one another. The fact that the Roblox search results were selected at significantly different rates are discussed in section 5B of the paper. The fact that the legitimate search results were more often selected than the scam search results is also discussed in section 5B.
+**Paper Result**: The following code performs Cochran's Q test to determine whether the search results were selected at significantly different rates. It then performs pairwise Wilcoxon sign tests to compare search results to one another. The fact that the Roblox search results were selected at significantly different rates is discussed in section 5B of the paper. The fact that the legitimate search results were more often selected than the scam search results is also discussed in section 5B.
 ```{r}
 xtabs(~selected + thumbnail, df_tn_roblox_long)
 tn_roblox.qtest <- cochran.qtest(selected ~ thumbnail|pid, df_tn_roblox_long, p.method = "BH")
