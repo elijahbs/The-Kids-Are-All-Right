@@ -43,7 +43,7 @@ data_path <- "data\\df_analysis.xlsx" # windows path
 df_merged <- read_xlsx(data_path)
 ```
 
-The following code creates new columns which are based upon the same question asked for Spotify and Roblox participants. For example, ```risk_usedSpotify``` and ```risk_playedRoblox```, which are the results of a question asking how frequently the participant uses spotify/plays Roblox, are merged into a new column ``risk_usedService```` 
+The following code creates new columns which are based upon the same question asked for Spotify and Roblox participants. For example, ```risk_usedSpotify``` and ```risk_playedRoblox```, which are the results of a question asking how frequently the participant uses Spotify/plays Roblox, are merged into a new column ```risk_usedService``` 
 ```{r}
 # usedSpotify and playedRoblox
 df_merged <- df_merged %>% mutate(risk_usedService = ifelse(is.na(risk_usedSpotify), ifelse(is.na(risk_playedRoblox),NA,risk_playedRoblox), risk_usedSpotify))
@@ -121,7 +121,7 @@ The parameters for the function are as follows:
 
 3. The parameter ```df``` specifies which dataframe should be used to perform the statistical test. The default value is ```df_merged```.
 
-4. The variable ```stimuli_type``` specifies whether or not comparisons should be restricted to only participants who saw particular type of stimuli (i.e., Roblox or Spotify related). Setting the value to ```"roblox"``` will only perform statistical tests with participants who saw Roblox stimuli. Setting the value to ```"spotify"``` wil only perform statistical tests with participants who saw Spotify stimuli. The default value, ```"both"```, performs testing with the entire sample.
+4. The variable ```stimuli_type``` specifies whether or not comparisons should be restricted to only participants who saw particular type of stimuli (i.e., Roblox or Spotify related). Setting the value to ```"roblox"``` will only perform statistical tests with participants who saw Roblox stimuli. Setting the value to ```"spotify"``` will only perform statistical tests with participants who saw Spotify stimuli. The default value, ```"both"```, performs testing with the entire sample.
 
 5. The variables ```fisher_B``` and ```fisher_simulate_p``` are passed through to the ```fisher.test``` parameters ```B``` and ```simulate.p.value```. These variables are used to enable simulating Fisher's test using a Monte Carlo simulation with 10,000 replications. This is necessary due to the computational infeasibility of running Fisher's test on some larger contingency tables. See the documentation of "fisher.test" for more details.
 
@@ -466,12 +466,12 @@ prop.table(table(df_merged_teen$risk_usedSpotify))
 
 ## Statistical testing
 ### Adult vs Teen comparisons
-The following code tests which potential independent variables are associated with whether a participant is a teen or an adult
+The following code tests which potential independent variables are associated with whether a participant is a teen or an adult.
 ```{r}
 adult_results <- stat_test(dep_var ="adult", condition_type = "scam")
 ```
 
-**Paper Result**: The following code prints results that are significantly associated with being an adult/teen. These results are discussed in section 5A of the paper
+**Paper Result**: The following code prints results that are significantly associated with being an adult/teen. These results are discussed in section 5A of the paper.
 ```{r}
 adult_results %>% filter(significant == TRUE)
 ```
@@ -519,12 +519,12 @@ prop.table(table(df_merged$adult, df_merged$income, useNA = "always"),1)
 ```
 ### Gender comparisons
 
-The following code tests which potential independent variables are associated with binary gender. Sample size was insufficient to include non-binary individuals in this analysis. These comparisons were not preplanned, but run to contextualize differences in behavior.
+The following code tests which potential independent variables are associated with binary gender. Sample size was insufficient to include non-binary individuals in this analysis. These comparisons were not pre-planned, but run to contextualize differences in behavior.
 ```{r}
 binary_gender_results <- stat_test(dep_var ="binary_gender", condition_type = "scam")
 ```
 
-**Paper Result**: The following code prints results that are significantly associated with binary gender These results are discussed in section 5D of the paper
+**Paper Result**: The following code prints results that are significantly associated with binary gender. These results are discussed in section 5D of the paper.
 ```{r}
 binary_gender_results %>% filter(significant == TRUE)
 ```
@@ -554,7 +554,7 @@ print("Gender vs.Frequency of purchasing crypto assets")
 prop.table(table(df_merged$binary_gender, df_merged$risk_crypto), 1)
 ```
 ### Experience searching for Free Robux comparisons
-The following code tests which potential independent variables are significantly associated with experience searching for "Free Roblox Robux" or something similar
+The following code tests which potential independent variables are significantly associated with experience searching for "Free Roblox Robux" or something similar.
 
 ```{r}
 roblox_s_results <- stat_test("roblox_s", stimuli_tyoe = "roblox",condition_type = "neither")
@@ -595,32 +595,32 @@ The following code tests which potential independent variables are significantly
 ```{r}
 spotify_s_results <- stat_test("spotify_s", stimuli_tyoe = "spotify", condition_type = "neither")
 ```
-**Paper Result**: The following code shows that none of the tested variables varied significantly 
+**Paper Result**: The following code shows that none of the tested variables varied significantly.
 ```{r}
 spotify_s_results %>% filter(significant == TRUE)
 ```
 
 ### Free Robux search likelihood comparisons
-The following code tests which potential independent variables are significantly associated with an expressed likelihood of  searching for "Free Roblox Robux" or something similar
+The following code tests which potential independent variables are significantly associated with an expressed likelihood of  searching for "Free Roblox Robux" or something similar.
 
 ```{r}
 # Bin to likely vs unlikely
 df_merged <- df_merged %>% mutate(rbolox_s_likleihood_bool = ifelse(roblox_s_likliehood == "Somewhat likely", TRUE,ifelse(roblox_s_likliehood == "Extremely likely", TRUE, ifelse(is.na(roblox_s_likliehood), NA, FALSE))))
 roblox_s_likliehood_results <- stat_test("rbolox_s_likleihood_bool", stimuli_tyoe = "roblox")
 ```
-The following code shows that none of the tested variables varied significantly 
+The following code shows that none of the tested variables varied significantly.
 ```{r}
 roblox_s_likliehood_results %>% filter(significant == TRUE)
 ```
 
 ### Free Spotify search liklihood comparisons
-The following code tests which potential independent variables are significantly associated with a likelihood of  searching for "Free Spotify Premium" or something similar
+The following code tests which potential independent variables are significantly associated with a likelihood of  searching for "Free Spotify Premium" or something similar.
 ```{r}
 # Bin to likely vs unlikely
 df_merged <- df_merged %>% mutate(spotify_s_liklihood_bool = ifelse(spotify_s_liklihood == "Somewhat likely", TRUE,ifelse(spotify_s_liklihood == "Extremely likely", TRUE, ifelse(is.na(spotify_s_liklihood), NA, FALSE))))
 spotify_s_liklihood_results <- stat_test("spotify_s_liklihood_bool", stimuli_tyoe = "spotify")
 ```
-The following code shows that none of the tested variables varied significantly 
+The following code shows that none of the tested variables varied significantly.
 ```{r}
 spotify_s_liklihood_results %>% filter(significant == TRUE)
 ```
@@ -628,11 +628,11 @@ spotify_s_liklihood_results %>% filter(significant == TRUE)
 
 
 ### Scam Ranking comparions
-The following code tests which potential independent variables  are significantly associated with correctly identifying the scam stimuli
+The following code tests which potential independent variables  are significantly associated with correctly identifying the scam stimuli.
 ```{r}
 rank_scam_results <- stat_test(dep_var ="rank_scam_bool", condition_type = "scam")
 ```
-**Paper Result**: The following code prints results for variables that are significantly associated with correctly identifying scam stimuli. These results are discussed in section 5D 
+**Paper Result**: The following code prints results for variables that are significantly associated with correctly identifying scam stimuli. These results are discussed in section 5D.
 ```{r}
 rank_scam_results %>% filter(significant == TRUE)
 ```
@@ -661,7 +661,7 @@ prop.table(table(df_merged$time_computer, df_merged$rank_scam_bool),1)
 
 
 #### Post-hoc comparisons
-**Paper Result** Gender is associated with amount of time spent daily on digital entertainment activities. The following code tests whether time spent on digital entertainment activities is a significant predictor of ranking success when controlling for gender. From this, we see that time remains a weakly significant predictor for women ($p_{uncorrected} < 0.006$, $\theta = 0.181$) but not men ($p_{uncorrected} = 0.156$)
+**Paper Result** Gender is associated with amount of time spent daily on digital entertainment activities. The following code tests whether time spent on digital entertainment activities is a significant predictor of ranking success when controlling for gender. From this, we see that time remains a weakly significant predictor for women ($p_{uncorrected} < 0.006$, $\theta = 0.181$) but not men ($p_{uncorrected} = 0.156$).
 ```{r}
 # bin to men and women separately
 df_merged_men <- df_merged %>% filter(binary_gender == "Male")
@@ -673,7 +673,7 @@ CochranArmitageTest(table(df_merged_women$time_overall, df_merged_women$rank_sca
 freemanTheta(table(df_merged_women$time_overall, df_merged_women$rank_scam_bool))
 ```
 
-**Paper Result** Gender is associated with amount of time spent weekly on console/computer games. The following code tests whether time spent on console/comptuer games is a significant predictor of ranking success when controlling for gender. From this, we see that time remains a not a significant predictor for just women ($p_{uncorrected} = 0.159$) or just men($p_{uncorrected} = 0.275$)
+**Paper Result** Gender is associated with amount of time spent weekly on console/computer games. The following code tests whether time spent on console/comptuer games is a significant predictor of ranking success when controlling for gender. From this, we see that time remains a not a significant predictor for just women ($p_{uncorrected} = 0.159$) or just men($p_{uncorrected} = 0.275$).
 ```{r}
 # Check if difference exists with just men
 print("Test scam ranking vs. time on console/computer games with just men")
@@ -684,12 +684,12 @@ CochranArmitageTest(table(df_merged_women$time_computer, df_merged_women$rank_sc
 
 
 ### Legit Ranking comparions
-The following code tests which potential independent variables are significantly associated with correctly identifying the legit stimuli
+The following code tests which potential independent variables are significantly associated with correctly identifying the legit stimuli.
 ```{r}
 rank_legit_results <- stat_test(dep_var ="rank_legit_bool", condition_type = "legit")
 ```
 
-The following code prints results for variables that are significantly associated with correctly identifying legit stimuli
+The following code prints results for variables that are significantly associated with correctly identifying legit stimuli.
 ```{r}
 rank_legit_results %>% filter(significant == TRUE)
 ```
@@ -730,7 +730,7 @@ legit_exit_results <- stat_test(dep_var = "Exit.the.video.without.doing.anything
 ```{r}
 legit_exit_results %>% filter(significant == TRUE)
 ```
-The following code prints the rate of recommending to exit the legit YouTube video by legit stimuli shown 
+The following code prints the rate of recommending to exit the legit YouTube video by legit stimuli shown.
 ```{r}
 prop.table(table(df_legit_actions$Exit.the.video.without.doing.anything, df_legit_actions$legit_condition),2)
 ```
@@ -776,8 +776,7 @@ The following code tests which potential independent variables are significantly
 ```{r}
 legit_visit_results <- stat_test(dep_var = "Visit.the.website.s..shown.in.the.video", df=df_legit_actions, condition_type = "legit")
 ```
-**Paper Result**: The following code prints results for variables that are significantly associated with recommending to visit the website shown in legit YouTube video. 
-The fact that legit stimuli shown is significantly associated the rate of vising the website shown in the legit YouTube video is presented in Figure 3a of the paper. The other results are not discussed due to a lack of space. 
+**Paper Result**: The following code prints results for variables that are significantly associated with recommending to visit the website shown in legit YouTube video.  The fact that legit stimuli shown is significantly associated the rate of vising the website shown in the legit YouTube video is presented in Figure 3a of the paper. The other results are not discussed due to a lack of space. 
 ```{r}
 legit_visit_results %>% filter(significant == TRUE)
 ```
@@ -813,7 +812,7 @@ print("Test visit website vs. time on mobile games with just teens")
 CochranArmitageTest(table(df_legit_actions_teen$time_mobile, df_legit_actions_teen$Visit.the.website.s..shown.in.the.video))
 ```
 
-Being an adult/teen is associated with frequency of doing online tasks. The following code determines whether frequency of doing online tasks remains a significant predictor when controlling for age. From this, we see that frequency of doing online tasks remains weakly significant predictor of visiting the website shown in the legit YouTube video only for teens alone ($p_{uncorrected} = 0.012$), but not adults alone ($p_{uncorrected} = 0.4441$)
+Being an adult/teen is associated with frequency of doing online tasks. The following code determines whether frequency of doing online tasks remains a significant predictor when controlling for age. From this, we see that frequency of doing online tasks remains weakly significant predictor of visiting the website shown in the legit YouTube video only for teens alone ($p_{uncorrected} = 0.012$), but not adults alone ($p_{uncorrected} = 0.4441$).
 ```{r}
 print("online tasks vs visit website for adults")
 CochranArmitageTest(table(df_legit_actions_adult$risk_onlineTasks, df_legit_actions_adult$Visit.the.website.s..shown.in.the.video))
@@ -826,25 +825,25 @@ The following code tests which potential independent variables are significantly
 ```{r}
 legit_lookatcomments_results <- stat_test(dep_var = "Look.at.the.comments.on.the.video", df=df_legit_actions, condition_type = "legit")
 ```
-The following code shows that none of the tested variables were significantly associated with looking at the comments on the legit YouTube video
+The following code shows that none of the tested variables were significantly associated with looking at the comments on the legit YouTube video.
 ```{r}
 legit_lookatcomments_results %>% filter(significant == TRUE)
 ```
 ##### Leave a comment
-The following code tests which potential independent variables are significantly associated with recommending to leave a comment on the legit YouTube video
+The following code tests which potential independent variables are significantly associated with recommending to leave a comment on the legit YouTube video.
 ```{r}
 legit_leaveacomment_results <- stat_test(dep_var = "Leave.a.comment.on.the.video..please.specify.", df=df_legit_actions, condition_type = "legit")
 ```
-The following code shows that none of the tested variables were significantly associated with recommending to leave a comment on the legit YouTube video
+The following code shows that none of the tested variables were significantly associated with recommending to leave a comment on the legit YouTube video.
 ```{r}
 legit_leaveacomment_results %>% filter(significant == TRUE)
 ```
 ##### other
-The following code tests which potential independent variables are significantly associated with recommending a different action in response to the legit YouTube video
+The following code tests which potential independent variables are significantly associated with recommending a different action in response to the legit YouTube video.
 ```{r}
 legit_other_results <- stat_test(dep_var = "Other..please.specify.", df=df_legit_actions, condition_type = "legit")
 ```
-The following code shows that none of the tested variables were significantly associated with recommending a different action in response to the legit YouTube video
+The following code shows that none of the tested variables were significantly associated with recommending a different action in response to the legit YouTube video.
 ```{r}
 legit_other_results %>% filter(significant == TRUE)
 ```
@@ -860,7 +859,7 @@ df_lgt_web_actions <- data.frame(df_merged, mat)
 ```
 
 ##### Exit
-The following code tests which potential independent variables are significantly associated with recommending to exit the legit website
+The following code tests which potential independent variables are significantly associated with recommending to exit the legit website.
 ```{r}
 lgt_web_exit_results <- stat_test(dep_var = "Exit.from.the.website.without.doing.anything", df=df_lgt_web_actions, condition_type = "legit")
 ```
@@ -871,7 +870,7 @@ lgt_web_exit_results %>% filter(significant == TRUE)
 
 
 ##### Search online
-The following code tests which potential independent variables are significantly associated with recommending to search to learn more about the legit website
+The following code tests which potential independent variables are significantly associated with recommending to search to learn more about the legit website.
 ```{r}
 lgt_web_search_results <- stat_test(dep_var = "Search.online.to.learn.more.about.the.website", df=df_lgt_web_actions, condition_type = "legit")
 ```
@@ -879,7 +878,7 @@ The following code prints results for variables that are significantly associate
 ```{r}
 lgt_web_search_results %>% filter(significant == TRUE)
 ```
-The following code prints the table comparing the rate of recommending to search to learn more about the legit website based on level of usage of Spotify
+The following code prints the table comparing the rate of recommending to search to learn more about the legit website based on level of usage of Spotify.
 ```{r}
 prop.table(table(df_lgt_web_actions$Search.online.to.learn.more.about.the.website, df_lgt_web_actions$risk_usedSpotify),2)
 ```
@@ -915,15 +914,15 @@ prop.table(table(df_lgt_web_actions$Register.for.the.website, df_lgt_web_actions
 ```
 
 ##### Ask for help
-The following code combines the option presented to adults ("Ask a knowledgeable friend for help") with the option presented ot teens ("Ask a parent for help")
+The following code combines the option presented to adults ("Ask a knowledgeable friend for help") with the option presented to teens ("Ask a parent for help").
 ```{r}
 df_lgt_web_actions$Ask.for.help <- df_lgt_web_actions$Ask.a.knowledgeable.friend.for.help | df_lgt_web_actions$Ask.a.parent.for.help
 ```
-The following code tests which potential independent variables are significantly associated with recommending to ask for help when viewing the legit website
+The following code tests which potential independent variables are significantly associated with recommending to ask for help when viewing the legit website.
 ```{r}
 lgt_web_ask_for_help_results <- stat_test(dep_var = "Ask.for.help", df=df_lgt_web_actions, condition_type = "legit")
 ```
-**Paper result**: The following code prints results for variables that are significantly associated with asking for help when viewing the legit website. The fact that teens were more likely to recommend asking for help is discussed in section 5C
+**Paper result**: The following code prints results for variables that are significantly associated with asking for help when viewing the legit website. The fact that teens were more likely to recommend asking for help is discussed in section 5C.
 ```{r}
 lgt_web_ask_for_help_results %>% filter(significant == TRUE)
 ```
@@ -933,7 +932,7 @@ prop.table(table(df_lgt_web_actions$Ask.for.help, df_lgt_web_actions$adult),2)
 ```
 
 ##### Other
-The following code tests which potential independent variables are significantly associated with recommending another action when viewing the legit website
+The following code tests which potential independent variables are significantly associated with recommending another action when viewing the legit website.
 ```{r}
 lgt_other_results <- stat_test(dep_var = "Other..please.specify.", df=df_lgt_web_actions)
 ```
@@ -977,11 +976,11 @@ The following code tests which potential independent variables are significantly
 ```{r}
 scam_search_results <- stat_test(dep_var = "Search.online.to.learn.more.about.what.the.video.describes", df=df_scam_actions)
 ```
-**Paper result**: The following code prints results for variables that are significantly associated with recommending to search to learn more about the scam YouTube video. The fact that searching to learn more about the scam YouTube is significantly associated with scam stimuli is shown in figure 2a
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to search to learn more about the scam YouTube video. The fact that searching to learn more about the scam YouTube is significantly associated with scam stimuli is shown in figure 2a.
 ```{r}
 scam_search_results %>% filter(significant == TRUE)
 ```   
-The following code prints the rate of recommending to search to learn more about the scam YouTube video by stimuli shown. The rows represent whether the partiicpant recommended to search to learn more or not.
+The following code prints the rate of recommending to search to learn more about the scam YouTube video by stimuli shown. The rows represent whether the participant recommended to search to learn more or not.
 ```{r}
 prop.table(table(df_scam_actions$Search.online.to.learn.more.about.what.the.video.describes, df_scam_actions$scam_condition ),2)
 ```
@@ -1025,11 +1024,11 @@ The following code tests which potential independent variables are significantly
 ```{r}
 scam_visit_results <- stat_test(dep_var = "Visit.the.website.s..shown.in.the.video", df=df_scam_actions)
 ```
-**Paper result**: The following code prints results for variables that are significantly associated with recommending to visit the website shown in the scam YouTube video. The fact that visiting the website shown in scam YouTube video is significantly associated with stimuli shown is shown in figure 2a
+**Paper result**: The following code prints results for variables that are significantly associated with recommending to visit the website shown in the scam YouTube video. The fact that visiting the website shown in scam YouTube video is significantly associated with stimuli shown is shown in figure 2a.
 ```{r}
 scam_visit_results %>% filter(significant == TRUE)
 ```  
-The following code shows the rate of recommending to visit the website shown in the scam YouTube video by scam stimuli shown The rows represent whether the participant recommended visitng the scam website or not.   
+The following code shows the rate of recommending to visit the website shown in the scam YouTube video by scam stimuli shown. The rows represent whether the participant recommended vising the scam website or not.   
 ```{r}
 prop.table(table(df_scam_actions$Visit.the.website.s..shown.in.the.video, df_scam_actions$scam_condition), 2)
 ```
@@ -1121,7 +1120,7 @@ scm_register_results %>% filter(significant == TRUE)
 ```
 
 ##### Ask for help
-The following code combines the option presented to adults ("Ask a knowledgeable friend for help") with the option presented ot teens ("Ask a parent for help")
+The following code combines the option presented to adults ("Ask a knowledgeable friend for help") with the option presented to teens ("Ask a parent for help").
 ```{r}
 df_scm_web_actions$Ask.for.help <- df_scm_web_actions$Ask.a.knowledgeable.friend.for.help | df_scm_web_actions$Ask.a.parent.for.help
 ```
@@ -1158,7 +1157,7 @@ table(unlist(str_split(df_merged$tn_parts, ",")))/nrow(df_merged)
 ```
 
 #### Spotify search result comparisons
-The following code first creates ```df_tn_spotify_wide``` by splitting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result was selected. The numbering is described in the dictionary file. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_spotify_long```, This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
+The following code first creates ```df_tn_spotify_wide``` by splitting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result was selected. The numbering is described in the dictionary file. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_spotify_long```. This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
 ```{r}
 splitup <- sapply(unlist(df_tn_spotify$spotify_tn_selection), strsplit, ',')
 headnames <- c("1","2","3","4","5","6","7","8","9","10")
@@ -1173,7 +1172,7 @@ tn_spotify.qtest <- cochran.qtest(selected ~ thumbnail|pid, df_tn_spotify_long, 
 print(tn_spotify.qtest)
 ```
 
-The following code computes the effect size measure $\eta^2_Q$
+The following code computes the effect size measure $\eta^2_Q$.
 ```{r}
 # formula Q/(number of participants * (number of conditions - 1))
 tn_spotify.qtest$statistic/(nrow(df_tn_spotify_wide)*(9-1))
@@ -1294,7 +1293,7 @@ no_answer_spotify_Stats_Results %>% filter(significant == TRUE)
 ```
 
 ### Compare Rbolox thumbnail
-The following code first creates ```df_tn_roblox_wide``` by splitting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_roblox_long```, This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
+The following code first creates ```df_tn_roblox_wide``` by splitting the responses to the search result selection task into booleans where each boolean corresponds to whether the participant selected a particular search result. For example, if the column```X3``` is ```TRUE``` then the participant selected the third clickbait search result. ```X10``` corresponds to the none of the thumbnails option. The code next creates ```df_tn_roblox_long```. This long version contains nine rows for each participant (one row for each search result), with the variable ```thumbnail``` indicating which search result the row represents and the variable ```selected``` indicating whether or not the participant selected the search result. For example, if the variable ```thumbnail``` is ```X9``` and the variable ```selected``` is ```FALSE```, then the participant indicated by the ```pid``` did not select the third scam video search result.
 ```{r}
 splitup <- sapply(unlist(df_tn_roblox$roblox_tn_selection), strsplit, ',')
 headnames <- c("1","2","3","4","5","6","7","8","9","10")
@@ -1309,7 +1308,7 @@ tn_roblox.qtest <- cochran.qtest(selected ~ thumbnail|pid, df_tn_roblox_long, p.
 print(tn_roblox.qtest)
 ```
 
-The following code computes the effect size measure $\eta^2_Q$
+The following code computes the effect size measure $\eta^2_Q$.
 ```{r}
 # formula Q/(number of participants * (number of conditions - 1))
 tn_roblox.qtest$statistic/(nrow(df_tn_roblox_wide)*(9-1))

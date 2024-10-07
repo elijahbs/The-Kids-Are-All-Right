@@ -452,8 +452,8 @@ df_merged &lt;- read_xlsx(data_path)</code></pre>
 question asked for Spotify and Roblox participants. For example,
 <code>risk_usedSpotify</code> and <code>risk_playedRoblox</code>, which
 are the results of a question asking how frequently the participant uses
-spotify/plays Roblox, are merged into a new column
-``risk_usedService````</p>
+Spotify/plays Roblox, are merged into a new column
+<code>risk_usedService</code></p>
 <pre class="r"><code># usedSpotify and playedRoblox
 df_merged &lt;- df_merged %&gt;% mutate(risk_usedService = ifelse(is.na(risk_usedSpotify), ifelse(is.na(risk_playedRoblox),NA,risk_playedRoblox), risk_usedSpotify))
 
@@ -547,7 +547,7 @@ comparisons should be restricted to only participants who saw particular
 type of stimuli (i.e., Roblox or Spotify related). Setting the value to
 <code>&quot;roblox&quot;</code> will only perform statistical tests with
 participants who saw Roblox stimuli. Setting the value to
-<code>&quot;spotify&quot;</code> wil only perform statistical tests with
+<code>&quot;spotify&quot;</code> will only perform statistical tests with
 participants who saw Spotify stimuli. The default value,
 <code>&quot;both&quot;</code>, performs testing with the entire sample.</p></li>
 <li><p>The variables <code>fisher_B</code> and
@@ -1145,13 +1145,13 @@ print(&quot;Overall social media services used in the last week distribution&quo
 <div id="adult-vs-teen-comparisons" class="section level3">
 <h3>Adult vs Teen comparisons</h3>
 <p>The following code tests which potential independent variables are
-associated with whether a participant is a teen or an adult</p>
+associated with whether a participant is a teen or an adult.</p>
 <pre class="r"><code>adult_results &lt;- stat_test(dep_var =&quot;adult&quot;, condition_type = &quot;scam&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect</code></pre>
 <p><strong>Paper Result</strong>: The following code prints results that
 are significantly associated with being an adult/teen. These results are
-discussed in section 5A of the paper</p>
+discussed in section 5A of the paper.</p>
 <pre class="r"><code>adult_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##          independent dependent                test   p.adjusted        p.raw
 ## 1        time_mobile     adult CochranArmitageTest 3.439816e-02 1.375926e-02
@@ -1261,11 +1261,11 @@ print(&quot;Age vs. Household Income&quot;)</code></pre>
 <p>The following code tests which potential independent variables are
 associated with binary gender. Sample size was insufficient to include
 non-binary individuals in this analysis. These comparisons were not
-preplanned, but run to contextualize differences in behavior.</p>
+pre-planned, but run to contextualize differences in behavior.</p>
 <pre class="r"><code>binary_gender_results &lt;- stat_test(dep_var =&quot;binary_gender&quot;, condition_type = &quot;scam&quot;)</code></pre>
 <p><strong>Paper Result</strong>: The following code prints results that
-are significantly associated with binary gender These results are
-discussed in section 5D of the paper</p>
+are significantly associated with binary gender. These results are
+discussed in section 5D of the paper.</p>
 <pre class="r"><code>binary_gender_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##      independent     dependent                test   p.adjusted        p.raw
 ## 1   time_overall binary_gender CochranArmitageTest 1.610318e-02 2.415477e-03
@@ -1333,7 +1333,7 @@ row represents either men or women.</p>
 <h3>Experience searching for Free Robux comparisons</h3>
 <p>The following code tests which potential independent variables are
 significantly associated with experience searching for “Free Roblox
-Robux” or something similar</p>
+Robux” or something similar.</p>
 <pre class="r"><code>roblox_s_results &lt;- stat_test(&quot;roblox_s&quot;, stimuli_tyoe = &quot;roblox&quot;,condition_type = &quot;neither&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -1411,7 +1411,7 @@ Premium” or something similar.</p>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect</code></pre>
 <p><strong>Paper Result</strong>: The following code shows that none of
-the tested variables varied significantly</p>
+the tested variables varied significantly.</p>
 <pre class="r"><code>spotify_s_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>## [1] independent dependent   test        p.adjusted  p.raw       effect_size
 ## [7] significant
@@ -1421,7 +1421,7 @@ the tested variables varied significantly</p>
 <h3>Free Robux search likelihood comparisons</h3>
 <p>The following code tests which potential independent variables are
 significantly associated with an expressed likelihood of searching for
-“Free Roblox Robux” or something similar</p>
+“Free Roblox Robux” or something similar.</p>
 <pre class="r"><code># Bin to likely vs unlikely
 df_merged &lt;- df_merged %&gt;% mutate(rbolox_s_likleihood_bool = ifelse(roblox_s_likliehood == &quot;Somewhat likely&quot;, TRUE,ifelse(roblox_s_likliehood == &quot;Extremely likely&quot;, TRUE, ifelse(is.na(roblox_s_likliehood), NA, FALSE))))
 roblox_s_likliehood_results &lt;- stat_test(&quot;rbolox_s_likleihood_bool&quot;, stimuli_tyoe = &quot;roblox&quot;)</code></pre>
@@ -1443,7 +1443,7 @@ roblox_s_likliehood_results &lt;- stat_test(&quot;rbolox_s_likleihood_bool&quot;
 ## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect</code></pre>
 <p>The following code shows that none of the tested variables varied
-significantly</p>
+significantly.</p>
 <pre class="r"><code>roblox_s_likliehood_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>## [1] independent dependent   test        p.adjusted  p.raw       effect_size
 ## [7] significant
@@ -1453,7 +1453,7 @@ significantly</p>
 <h3>Free Spotify search liklihood comparisons</h3>
 <p>The following code tests which potential independent variables are
 significantly associated with a likelihood of searching for “Free
-Spotify Premium” or something similar</p>
+Spotify Premium” or something similar.</p>
 <pre class="r"><code># Bin to likely vs unlikely
 df_merged &lt;- df_merged %&gt;% mutate(spotify_s_liklihood_bool = ifelse(spotify_s_liklihood == &quot;Somewhat likely&quot;, TRUE,ifelse(spotify_s_liklihood == &quot;Extremely likely&quot;, TRUE, ifelse(is.na(spotify_s_liklihood), NA, FALSE))))
 spotify_s_liklihood_results &lt;- stat_test(&quot;spotify_s_liklihood_bool&quot;, stimuli_tyoe = &quot;spotify&quot;)</code></pre>
@@ -1463,7 +1463,7 @@ spotify_s_liklihood_results &lt;- stat_test(&quot;spotify_s_liklihood_bool&quot;
 ## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect</code></pre>
 <p>The following code shows that none of the tested variables varied
-significantly</p>
+significantly.</p>
 <pre class="r"><code>spotify_s_liklihood_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>## [1] independent dependent   test        p.adjusted  p.raw       effect_size
 ## [7] significant
@@ -1472,7 +1472,8 @@ significantly</p>
 <div id="scam-ranking-comparions" class="section level3">
 <h3>Scam Ranking comparions</h3>
 <p>The following code tests which potential independent variables are
-significantly associated with correctly identifying the scam stimuli</p>
+significantly associated with correctly identifying the scam
+stimuli.</p>
 <pre class="r"><code>rank_scam_results &lt;- stat_test(dep_var =&quot;rank_scam_bool&quot;, condition_type = &quot;scam&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -1481,7 +1482,7 @@ significantly associated with correctly identifying the scam stimuli</p>
 ## approximation may be incorrect</code></pre>
 <p><strong>Paper Result</strong>: The following code prints results for
 variables that are significantly associated with correctly identifying
-scam stimuli. These results are discussed in section 5D</p>
+scam stimuli. These results are discussed in section 5D.</p>
 <pre class="r"><code>rank_scam_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##      independent      dependent                test  p.adjusted        p.raw
 ## 1 scam_condition rank_scam_bool              fisher 0.002099790 0.0000999900
@@ -1560,7 +1561,7 @@ tests whether time spent on digital entertainment activities is a
 significant predictor of ranking success when controlling for gender.
 From this, we see that time remains a weakly significant predictor for
 women (<span class="math inline">\(p_{uncorrected} &lt; 0.006\)</span>,
-<span class="math inline">\(\theta = 0.181\)</span>) but not men (<span class="math inline">\(p_{uncorrected} = 0.156\)</span>)</p>
+<span class="math inline">\(\theta = 0.181\)</span>) but not men (<span class="math inline">\(p_{uncorrected} = 0.156\)</span>).</p>
 <pre class="r"><code># bin to men and women separately
 df_merged_men &lt;- df_merged %&gt;% filter(binary_gender == &quot;Male&quot;)
 df_merged_women &lt;- df_merged %&gt;% filter(binary_gender == &quot;Female&quot;)
@@ -1590,7 +1591,7 @@ time spent weekly on console/computer games. The following code tests
 whether time spent on console/comptuer games is a significant predictor
 of ranking success when controlling for gender. From this, we see that
 time remains a not a significant predictor for just women (<span class="math inline">\(p_{uncorrected} = 0.159\)</span>) or just
-men(<span class="math inline">\(p_{uncorrected} = 0.275\)</span>)</p>
+men(<span class="math inline">\(p_{uncorrected} = 0.275\)</span>).</p>
 <pre class="r"><code># Check if difference exists with just men
 print(&quot;Test scam ranking vs. time on console/computer games with just men&quot;)</code></pre>
 <pre><code>## [1] &quot;Test scam ranking vs. time on console/computer games with just men&quot;</code></pre>
@@ -1616,15 +1617,15 @@ print(&quot;Test scam ranking vs. time on console/computer games with just men&q
 <h3>Legit Ranking comparions</h3>
 <p>The following code tests which potential independent variables are
 significantly associated with correctly identifying the legit
-stimuli</p>
+stimuli.</p>
 <pre class="r"><code>rank_legit_results &lt;- stat_test(dep_var =&quot;rank_legit_bool&quot;, condition_type = &quot;legit&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect</code></pre>
 <p>The following code prints results for variables that are
-significantly associated with correctly identifying legit stimuli</p>
+significantly associated with correctly identifying legit stimuli.</p>
 <pre class="r"><code>rank_legit_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##        independent       dependent                test p.adjusted       p.raw
-## 1  legit_condition rank_legit_bool              fisher 0.01259874 0.000599940
+## 1  legit_condition rank_legit_bool              fisher 0.01344661 0.000899910
 ## 2 risk_onlineTasks rank_legit_bool CochranArmitageTest 0.01344661 0.001280629
 ##   effect_size significant
 ## 1   0.2954397        TRUE
@@ -1721,7 +1722,7 @@ video is presented in Figure 3a of the paper.</p>
 ##       p.raw effect_size significant
 ## 1 9.999e-05   0.3296086        TRUE</code></pre>
 <p>The following code prints the rate of recommending to exit the legit
-YouTube video by legit stimuli shown</p>
+YouTube video by legit stimuli shown.</p>
 <pre class="r"><code>prop.table(table(df_legit_actions$Exit.the.video.without.doing.anything, df_legit_actions$legit_condition),2)</code></pre>
 <pre><code>##        
 ##                lr1        lr2        lr3        ls1        ls2        ls3
@@ -1744,7 +1745,7 @@ the paper.</p>
 <pre><code>##       independent                                                  dependent
 ## 1 legit_condition Search.online.to.learn.more.about.what.the.video.describes
 ##     test p.adjusted      p.raw effect_size significant
-## 1 fisher 0.02729727 0.00129987   0.2596229        TRUE</code></pre>
+## 1 fisher 0.02519748 0.00119988   0.2596229        TRUE</code></pre>
 <p>The following code prints the rate of recommending to search to learn
 more about the legit YouTube video by legit stimuli shown.</p>
 <pre class="r"><code>prop.table(table(df_legit_actions$Search.online.to.learn.more.about.what.the.video.describes, df_legit_actions$legit_condition),2)</code></pre>
@@ -1925,7 +1926,7 @@ tasks remains a significant predictor when controlling for age. From
 this, we see that frequency of doing online tasks remains weakly
 significant predictor of visiting the website shown in the legit YouTube
 video only for teens alone (<span class="math inline">\(p_{uncorrected}
-= 0.012\)</span>), but not adults alone (<span class="math inline">\(p_{uncorrected} = 0.4441\)</span>)</p>
+= 0.012\)</span>), but not adults alone (<span class="math inline">\(p_{uncorrected} = 0.4441\)</span>).</p>
 <pre class="r"><code>print(&quot;online tasks vs visit website for adults&quot;)</code></pre>
 <pre><code>## [1] &quot;online tasks vs visit website for adults&quot;</code></pre>
 <pre class="r"><code>CochranArmitageTest(table(df_legit_actions_adult$risk_onlineTasks, df_legit_actions_adult$Visit.the.website.s..shown.in.the.video))</code></pre>
@@ -1954,7 +1955,7 @@ the legit YouTube video.</p>
 <pre class="r"><code>legit_lookatcomments_results &lt;- stat_test(dep_var = &quot;Look.at.the.comments.on.the.video&quot;, df=df_legit_actions, condition_type = &quot;legit&quot;)</code></pre>
 <p>The following code shows that none of the tested variables were
 significantly associated with looking at the comments on the legit
-YouTube video</p>
+YouTube video.</p>
 <pre class="r"><code>legit_lookatcomments_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>## [1] independent dependent   test        p.adjusted  p.raw       effect_size
 ## [7] significant
@@ -1964,7 +1965,7 @@ YouTube video</p>
 <h5>Leave a comment</h5>
 <p>The following code tests which potential independent variables are
 significantly associated with recommending to leave a comment on the
-legit YouTube video</p>
+legit YouTube video.</p>
 <pre class="r"><code>legit_leaveacomment_results &lt;- stat_test(dep_var = &quot;Leave.a.comment.on.the.video..please.specify.&quot;, df=df_legit_actions, condition_type = &quot;legit&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -1991,7 +1992,7 @@ legit YouTube video</p>
 ## approximation may be incorrect</code></pre>
 <p>The following code shows that none of the tested variables were
 significantly associated with recommending to leave a comment on the
-legit YouTube video</p>
+legit YouTube video.</p>
 <pre class="r"><code>legit_leaveacomment_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>## [1] independent dependent   test        p.adjusted  p.raw       effect_size
 ## [7] significant
@@ -2001,7 +2002,7 @@ legit YouTube video</p>
 <h5>other</h5>
 <p>The following code tests which potential independent variables are
 significantly associated with recommending a different action in
-response to the legit YouTube video</p>
+response to the legit YouTube video.</p>
 <pre class="r"><code>legit_other_results &lt;- stat_test(dep_var = &quot;Other..please.specify.&quot;, df=df_legit_actions, condition_type = &quot;legit&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -2025,7 +2026,7 @@ response to the legit YouTube video</p>
 ## approximation may be incorrect</code></pre>
 <p>The following code shows that none of the tested variables were
 significantly associated with recommending a different action in
-response to the legit YouTube video</p>
+response to the legit YouTube video.</p>
 <pre class="r"><code>legit_other_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>## [1] independent dependent   test        p.adjusted  p.raw       effect_size
 ## [7] significant
@@ -2049,7 +2050,8 @@ df_lgt_web_actions &lt;- data.frame(df_merged, mat)</code></pre>
 <div id="exit-1" class="section level5">
 <h5>Exit</h5>
 <p>The following code tests which potential independent variables are
-significantly associated with recommending to exit the legit website</p>
+significantly associated with recommending to exit the legit
+website.</p>
 <pre class="r"><code>lgt_web_exit_results &lt;- stat_test(dep_var = &quot;Exit.from.the.website.without.doing.anything&quot;, df=df_lgt_web_actions, condition_type = &quot;legit&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -2067,7 +2069,7 @@ significantly associated with exiting the legit website.</p>
 <h5>Search online</h5>
 <p>The following code tests which potential independent variables are
 significantly associated with recommending to search to learn more about
-the legit website</p>
+the legit website.</p>
 <pre class="r"><code>lgt_web_search_results &lt;- stat_test(dep_var = &quot;Search.online.to.learn.more.about.the.website&quot;, df=df_lgt_web_actions, condition_type = &quot;legit&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect</code></pre>
@@ -2081,7 +2083,7 @@ the legit website.</p>
 ## 1 CochranArmitageTest 0.01302861 0.0006204101      0.0748        TRUE</code></pre>
 <p>The following code prints the table comparing the rate of
 recommending to search to learn more about the legit website based on
-level of usage of Spotify</p>
+level of usage of Spotify.</p>
 <pre class="r"><code>prop.table(table(df_lgt_web_actions$Search.online.to.learn.more.about.the.website, df_lgt_web_actions$risk_usedSpotify),2)</code></pre>
 <pre><code>##        
 ##             Never Once or twice Three to five times More than five times
@@ -2145,12 +2147,12 @@ shown in the legit YouTube video.</p>
 <div id="ask-for-help" class="section level5">
 <h5>Ask for help</h5>
 <p>The following code combines the option presented to adults (“Ask a
-knowledgeable friend for help”) with the option presented ot teens (“Ask
-a parent for help”)</p>
+knowledgeable friend for help”) with the option presented to teens (“Ask
+a parent for help”).</p>
 <pre class="r"><code>df_lgt_web_actions$Ask.for.help &lt;- df_lgt_web_actions$Ask.a.knowledgeable.friend.for.help | df_lgt_web_actions$Ask.a.parent.for.help</code></pre>
 <p>The following code tests which potential independent variables are
 significantly associated with recommending to ask for help when viewing
-the legit website</p>
+the legit website.</p>
 <pre class="r"><code>lgt_web_ask_for_help_results &lt;- stat_test(dep_var = &quot;Ask.for.help&quot;, df=df_lgt_web_actions, condition_type = &quot;legit&quot;)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -2160,7 +2162,7 @@ the legit website</p>
 <p><strong>Paper result</strong>: The following code prints results for
 variables that are significantly associated with asking for help when
 viewing the legit website. The fact that teens were more likely to
-recommend asking for help is discussed in section 5C</p>
+recommend asking for help is discussed in section 5C.</p>
 <pre class="r"><code>lgt_web_ask_for_help_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##   independent    dependent   test p.adjusted       p.raw effect_size
 ## 1       adult Ask.for.help fisher 0.02494114 0.001187673   0.1916494
@@ -2179,7 +2181,7 @@ for help or not.</p>
 <h5>Other</h5>
 <p>The following code tests which potential independent variables are
 significantly associated with recommending another action when viewing
-the legit website</p>
+the legit website.</p>
 <pre class="r"><code>lgt_other_results &lt;- stat_test(dep_var = &quot;Other..please.specify.&quot;, df=df_lgt_web_actions)</code></pre>
 <pre><code>## Warning in stats::chisq.test(x, y, correct = correct, ...): Chi-squared
 ## approximation may be incorrect
@@ -2260,15 +2262,15 @@ the scam YouTube video.</p>
 variables that are significantly associated with recommending to search
 to learn more about the scam YouTube video. The fact that searching to
 learn more about the scam YouTube is significantly associated with scam
-stimuli is shown in figure 2a</p>
+stimuli is shown in figure 2a.</p>
 <pre class="r"><code>scam_search_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##      independent                                                  dependent
 ## 1 scam_condition Search.online.to.learn.more.about.what.the.video.describes
 ##     test p.adjusted      p.raw effect_size significant
-## 1 fisher 0.00419958 0.00019998    0.300931        TRUE</code></pre>
+## 1 fisher 0.00839916 0.00039996    0.300931        TRUE</code></pre>
 <p>The following code prints the rate of recommending to search to learn
 more about the scam YouTube video by stimuli shown. The rows represent
-whether the partiicpant recommended to search to learn more or not.</p>
+whether the participant recommended to search to learn more or not.</p>
 <pre class="r"><code>prop.table(table(df_scam_actions$Search.online.to.learn.more.about.what.the.video.describes, df_scam_actions$scam_condition ),2)</code></pre>
 <pre><code>##        
 ##               sr1       sr2       sr3       ss1       ss2       ss3
@@ -2371,16 +2373,16 @@ the scam YouTube video.</p>
 variables that are significantly associated with recommending to visit
 the website shown in the scam YouTube video. The fact that visiting the
 website shown in scam YouTube video is significantly associated with
-stimuli shown is shown in figure 2a</p>
+stimuli shown is shown in figure 2a.</p>
 <pre class="r"><code>scam_visit_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##      independent                               dependent   test p.adjusted
-## 1 scam_condition Visit.the.website.s..shown.in.the.video fisher 0.00839916
-##        p.raw effect_size significant
-## 1 0.00039996    0.289071        TRUE</code></pre>
+## 1 scam_condition Visit.the.website.s..shown.in.the.video fisher 0.00209979
+##       p.raw effect_size significant
+## 1 9.999e-05    0.289071        TRUE</code></pre>
 <p>The following code shows the rate of recommending to visit the
-website shown in the scam YouTube video by scam stimuli shown The rows
-represent whether the participant recommended visitng the scam website
-or not.</p>
+website shown in the scam YouTube video by scam stimuli shown. The rows
+represent whether the participant recommended vising the scam website or
+not.</p>
 <pre class="r"><code>prop.table(table(df_scam_actions$Visit.the.website.s..shown.in.the.video, df_scam_actions$scam_condition), 2)</code></pre>
 <pre><code>##        
 ##                sr1        sr2        sr3        ss1        ss2        ss3
@@ -2534,8 +2536,8 @@ is shown in figure 2b and discussed in section 5B of the paper.</p>
 <pre class="r"><code>scm_web_search_results %&gt;% filter(significant == TRUE)</code></pre>
 <pre><code>##      independent                                     dependent   test
 ## 1 scam_condition Search.online.to.learn.more.about.the.website fisher
-##   p.adjusted      p.raw effect_size significant
-## 1 0.00629937 0.00029997   0.3259399        TRUE</code></pre>
+##   p.adjusted     p.raw effect_size significant
+## 1 0.00209979 9.999e-05   0.3259399        TRUE</code></pre>
 <p>The following code prints the rate of recommending to search online
 to learn more about the scam website by scam stimuli shown. The rows
 represent whether or not the user recommended searching to learn more
@@ -2608,8 +2610,8 @@ the scam website.</p>
 <div id="ask-for-help-1" class="section level5">
 <h5>Ask for help</h5>
 <p>The following code combines the option presented to adults (“Ask a
-knowledgeable friend for help”) with the option presented ot teens (“Ask
-a parent for help”)</p>
+knowledgeable friend for help”) with the option presented to teens (“Ask
+a parent for help”).</p>
 <pre class="r"><code>df_scm_web_actions$Ask.for.help &lt;- df_scm_web_actions$Ask.a.knowledgeable.friend.for.help | df_scm_web_actions$Ask.a.parent.for.help</code></pre>
 <p>The following code tests which potential independent variables are
 significantly associated with recommending to ask for help when viewing
@@ -2709,7 +2711,7 @@ described in the dictionary file. For example, if the
 column<code>X3</code> is <code>TRUE</code> then the participant selected
 the third clickbait search result. <code>X10</code> corresponds to the
 none of the thumbnails option. The code next creates
-<code>df_tn_spotify_long</code>, This long version contains nine rows
+<code>df_tn_spotify_long</code>. This long version contains nine rows
 for each participant (one row for each search result), with the variable
 <code>thumbnail</code> indicating which search result the row represents
 and the variable <code>selected</code> indicating whether or not the
@@ -2773,7 +2775,7 @@ print(tn_spotify.qtest)</code></pre>
 ## X9 0.0006154
 ## 
 ## P value adjustment method: BH</code></pre>
-<p>The following code computes the effect size measure <span class="math inline">\(\eta^2_Q\)</span></p>
+<p>The following code computes the effect size measure <span class="math inline">\(\eta^2_Q\)</span>.</p>
 <pre class="r"><code># formula Q/(number of participants * (number of conditions - 1))
 tn_spotify.qtest$statistic/(nrow(df_tn_spotify_wide)*(9-1))</code></pre>
 <pre><code>##        Q 
@@ -3002,7 +3004,7 @@ selected a particular search result. For example, if the
 column<code>X3</code> is <code>TRUE</code> then the participant selected
 the third clickbait search result. <code>X10</code> corresponds to the
 none of the thumbnails option. The code next creates
-<code>df_tn_roblox_long</code>, This long version contains nine rows for
+<code>df_tn_roblox_long</code>. This long version contains nine rows for
 each participant (one row for each search result), with the variable
 <code>thumbnail</code> indicating which search result the row represents
 and the variable <code>selected</code> indicating whether or not the
@@ -3066,7 +3068,7 @@ print(tn_roblox.qtest)</code></pre>
 ## X9 0.0009981
 ## 
 ## P value adjustment method: BH</code></pre>
-<p>The following code computes the effect size measure <span class="math inline">\(\eta^2_Q\)</span></p>
+<p>The following code computes the effect size measure <span class="math inline">\(\eta^2_Q\)</span>.</p>
 <pre class="r"><code># formula Q/(number of participants * (number of conditions - 1))
 tn_roblox.qtest$statistic/(nrow(df_tn_roblox_wide)*(9-1))</code></pre>
 <pre><code>##         Q 
