@@ -3,10 +3,6 @@
 This repository contains the survey instrument, analysis scripts, and de-identified data for the NDSS '25 paper "The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams" by Elijah Bouma-Sims, Lily Klucinec, Mandy Lanyon, Lorrie Faith Cranor, Julie Downs. This paper has been accepted to [NDSS 2025](https://www.ndss-symposium.org/ndss2025/), pending minor revisions.
 
 
-
-<a href="https://doi.org/10.5281/zenodo.13910630"><img src="https://zenodo.org/badge/862386590.svg" alt="DOI"></a>
-
-
 ## Requirements
 Analysis was performed using R version 4.3.3, however, it is not expected that the version of R will effect the results. The analysis script is distributed in the form of an R Markdown (.rmd) file, requiring [RStudio](https://posit.co/download/rstudio-desktop/) to view.  Data is stored in Excel format (.xlsx), which requires Microsoft Excel or compatible spreadsheet software to view. The survey is in Microsoft Word format (.docx), which requires Microsoft Word or compatible document editing software to view. Media is distributed as PNG files for images and MP4 files for videos. Finally, the following readily available R packages are used in the analysis script: "RVAideMemoire",  "dplyr", "rstatix", "readxl", "rcompanion", "DescTools", and "stringr." 
 
@@ -18,7 +14,3 @@ Analysis was performed using R version 4.3.3, however, it is not expected that t
 * ```survey\consent\``` contains the informed consent forms provided to participants. ```survey\consent\adult_consent.docx``` is the informed consent form presented to Prolific crowdworkers. ```survey\consent\parental_consent.docx``` is the informed consent form presented to parents of teenage partiicpants. ```survey\consent\ES_parental_consent.docx``` is the Spanish translated version of the parental consent form. ```survey\consent\teen_assent.docx``` is the assent form presented to teenage participants.  
 * ```survey\experiment\``` contains the text of the survey instruments used to collect data for the experiment. ```survey\experiment\parent_survey.docx``` is the demographic questionaire which parents filled out on behalf of their children. ```survey\experiment\ES_parent_survey.docx``` is the Spanish translated version of the parental demographic questionaire. ```survey\experiment\teen_survey.docx``` contains the survey instrument which teenage participants saw. ```survey\experiment\adult_survey.docx``` contains the survey instrument whch adult partiicpants saw. Finally, ```survey\experiment\teen_compensation_survey.docx``` contains the survey used to collect email addresses from teen participants for compensation purposes.
 * ```recruitment\``` contains the recruitment materials used for the experiment. ```recruitment\paremt_poster.png``` is the poster distributed to parents via snowball sampling and Peachjar.  ```recruitment\prolific.docx``` contains the text of the posting used to recruit crowdworkers on Prolific.
-
-## Avaliability
-
-This artifact is published on [Github](https://github.com/elijahbs/The-Kids-Are-All-Right) and [Zenodo](https://doi.org/10.5281/zenodo.13910586). For the most up to date version, please see the Github repository.
