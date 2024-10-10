@@ -16,4 +16,4 @@ Analysis was performed using R version 4.3.3, however, it is not expected that t
 
 ## Avaliability
 
-This artifact is published on [Github](https://github.com/elijahbs/The-Kids-Are-All-Right) and [Zenodo](https://doi.org/10.5281/zenodo.13910586). 
+This artifact is published on [Github](https://github.com/elijahbs/The-Kids-Are-All-Right) and [Zenodo](https://doi.org/10.5281/zenodo.13910586). For the most up to date version, please see the Github repository.
