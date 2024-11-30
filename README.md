@@ -1,6 +1,6 @@
 # The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams
 
-This repository contains the survey instrument, analysis scripts, and de-identified data for the NDSS '25 paper "The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams" by Elijah Bouma-Sims, Lily Klucinec, Mandy Lanyon, Lorrie Faith Cranor, Julie Downs. This paper has been accepted to [NDSS 2025](https://www.ndss-symposium.org/ndss2025/), pending minor revisions.
+This repository contains the survey instrument, analysis scripts, and de-identified data for the NDSS '25 paper "The Kids Are All Right: Investigating the Susceptibility of Teens and Adults to YouTube Giveaway Scams" by Elijah Bouma-Sims, Lily Klucinec, Mandy Lanyon, Lorrie Faith Cranor, Julie Downs. This paper has been accepted to [NDSS 2025](https://www.ndss-symposium.org/ndss2025/). When avliable, the paper will be accessible from [https://dx.doi.org/10.14722/ndss.2025.24342](https://dx.doi.org/10.14722/ndss.2025.24342).
 
 
 ## Requirements
